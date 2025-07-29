@@ -10,35 +10,6 @@ This project uses a **separated frontend/backend architecture**:
 - **Backend**: Node.js + Express (Port 3001)
 - **AI Service**: OpenRouter API
 
-## Project Structure
-
-```
-readmytermsandconditions/
-├── frontend/                    # React application
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── FileUploadArea.jsx
-│   │   │   ├── TextAreaInput.jsx
-│   │   │   ├── SummaryDisplay.jsx
-│   │   │   └── CollapsibleSection.jsx
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── index.css
-│   ├── public/
-│   ├── package.json
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   ├── postcss.config.js
-│   ├── eslint.config.js
-│   └── env.example
-├── backend/                     # Node.js server
-│   ├── server.js               # Main server file
-│   ├── package.json
-│   └── env.example
-├── package.json                 # Root package.json
-└── README.md
-```
-
 ## Features
 
 - **File Upload**: Support for PDF, DOCX, DOC, and TXT files (max 5MB)
@@ -92,12 +63,19 @@ git clone <repository-url>
 cd readmytermsandconditions
 ```
 
-2. Install all dependencies (frontend + backend):
+2. Install frontend dependencies:
 ```bash
-npm run install:all
+npm install
 ```
 
-3. Set up environment variables:
+3. Install backend dependencies:
+```bash
+cd backend
+npm install
+cd ..
+```
+
+4. Set up environment variables:
 
 **Backend** (create `backend/.env`):
 ```env
@@ -105,45 +83,23 @@ PORT=3001
 OPENROUTER_API_KEY=your_openrouter_api_key_here
 ```
 
-**Frontend** (create `frontend/.env`):
+**Frontend** (create `.env`):
 ```env
 VITE_API_URL=http://localhost:3001
 ```
 
-4. Start both frontend and backend:
+5. Start the backend server:
+```bash
+cd backend
+npm run dev
+```
+
+6. In a new terminal, start the frontend:
 ```bash
 npm run dev
 ```
 
-5. Open your browser and navigate to `http://localhost:5173`
-
-## Available Scripts
-
-### Root (Project Level)
-- `npm run install:all` - Install all dependencies
-- `npm run dev` - Start both frontend and backend
-- `npm run dev:frontend` - Start frontend only
-- `npm run dev:backend` - Start backend only
-- `npm run build` - Build frontend for production
-- `npm run start:backend` - Start backend in production mode
-- `npm run lint` - Run ESLint on frontend
-- `npm run preview` - Preview frontend build
-
-### Frontend Only
-```bash
-cd frontend
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run preview  # Preview production build
-npm run lint     # Run ESLint
-```
-
-### Backend Only
-```bash
-cd backend
-npm run dev      # Start development server
-npm start        # Start production server
-```
+7. Open your browser and navigate to `http://localhost:5173`
 
 ## API Endpoints
 
@@ -180,6 +136,42 @@ file: [file object]
 }
 ```
 
+## Project Structure
+
+```
+readmytermsandconditions/
+├── frontend/                    # React application
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── FileUploadArea.jsx
+│   │   │   ├── TextAreaInput.jsx
+│   │   │   ├── SummaryDisplay.jsx
+│   │   │   └── CollapsibleSection.jsx
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
+│   ├── package.json
+│   └── vite.config.js
+├── backend/                     # Node.js server
+│   ├── server.js               # Main server file
+│   ├── package.json
+│   └── env.example
+├── package.json
+└── README.md
+```
+
+## Available Scripts
+
+### Frontend
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+### Backend
+- `npm run dev` - Start development server with nodemon
+- `npm start` - Start production server
+
 ## File Processing Details
 
 ### Backend Processing
@@ -215,10 +207,8 @@ The backend uses these default settings:
 
 ## Development Workflow
 
-1. **Start Both**: `npm run dev` (from root)
-2. **Or Start Separately**:
-   - Backend: `npm run dev:backend`
-   - Frontend: `npm run dev:frontend`
+1. **Start Backend**: `cd backend && npm run dev`
+2. **Start Frontend**: `npm run dev` (in root directory)
 3. **Test**: Upload files or paste text to test analysis
 4. **Monitor**: Check backend console for API calls and errors
 
@@ -251,7 +241,7 @@ The application handles various error scenarios:
 ### Frontend Deployment
 ```bash
 npm run build
-# Deploy the frontend/dist/ folder to your hosting service
+# Deploy the dist/ folder to your hosting service
 ```
 
 ### Backend Deployment
@@ -275,4 +265,4 @@ This project is licensed under the MIT License.
 
 ## Disclaimer
 
-This application is for informational purposes only. The AI analysis should not be considered as legal advice. Always consult with a legal professional for specific legal matters. 
+This application is for informational purposes only. The AI analysis should not be considered as legal advice. Always consult with a legal professional for specific legal matters.
