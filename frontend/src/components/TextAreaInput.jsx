@@ -5,15 +5,22 @@ const TextAreaInput = ({ onSubmit }) => {
   const [error, setError] = useState('')
   
   const MAX_CHARACTERS = 800
+  const MIN_CHARACTERS = 100
   const remainingChars = MAX_CHARACTERS - text.length
   const isNearLimit = remainingChars < 100
   const isOverLimit = remainingChars < 0
+  const isUnderMin = text.trim().length < MIN_CHARACTERS
 
   const handleSubmit = (e) => {
     e.preventDefault()
     
     if (!text.trim()) {
       setError('Please enter some text to analyze')
+      return
+    }
+    
+    if (text.trim().length < MIN_CHARACTERS) {
+      setError(`Please enter at least ${MIN_CHARACTERS} characters for meaningful analysis`)
       return
     }
     
@@ -50,15 +57,21 @@ const TextAreaInput = ({ onSubmit }) => {
             className={`w-full px-4 py-4 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 resize-none transition-all duration-200 ${
               isOverLimit ? 'border-red-300 bg-red-50' : 
               isNearLimit ? 'border-yellow-300 bg-yellow-50' : 
+              isUnderMin ? 'border-orange-300 bg-orange-50' :
               'border-gray-300 hover:border-gray-400'
             }`}
-            placeholder="Paste your terms and conditions text here... We'll analyze it and break it down into easy-to-understand sections."
+            placeholder="Paste your terms and conditions text here... We'll analyze it and break it down into easy-to-understand sections. (Minimum 100 characters required)"
             maxLength={MAX_CHARACTERS}
           />
           
           {/* Character counter */}
           <div className="absolute bottom-3 right-3 flex items-center space-x-2">
-            {isNearLimit && (
+            {isUnderMin && (
+              <div className="text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-700">
+                Min {MIN_CHARACTERS} chars
+              </div>
+            )}
+            {isNearLimit && !isUnderMin && (
               <div className={`text-xs px-2 py-1 rounded-full ${
                 isOverLimit ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
               }`}>
@@ -68,11 +81,36 @@ const TextAreaInput = ({ onSubmit }) => {
             <div className={`text-xs font-medium ${
               isOverLimit ? 'text-red-600' : 
               isNearLimit ? 'text-yellow-600' : 
+              isUnderMin ? 'text-orange-600' :
               'text-gray-500'
             }`}>
-              {remainingChars}/{MAX_CHARACTERS}
+              {text.length}/{MAX_CHARACTERS}
             </div>
           </div>
+        </div>
+        
+        {/* Progress indicator */}
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className={`h-2 rounded-full transition-all duration-300 ${
+              isOverLimit ? 'bg-red-500' :
+              isNearLimit ? 'bg-yellow-500' :
+              isUnderMin ? 'bg-orange-500' :
+              'bg-green-500'
+            }`}
+            style={{ 
+              width: `${Math.min(100, (text.length / MAX_CHARACTERS) * 100)}%` 
+            }}
+          ></div>
+        </div>
+        
+        <div className="flex justify-between text-xs text-gray-500">
+          <span className={isUnderMin ? 'text-orange-600 font-medium' : ''}>
+            {text.trim().length < MIN_CHARACTERS ? `${MIN_CHARACTERS - text.trim().length} more chars needed` : 'Minimum met ✓'}
+          </span>
+          <span>
+            {text.length}/{MAX_CHARACTERS} characters
+          </span>
         </div>
       </div>
 
@@ -89,7 +127,7 @@ const TextAreaInput = ({ onSubmit }) => {
 
       <button
         type="submit"
-        disabled={!text.trim() || text.length > MAX_CHARACTERS}
+        disabled={!text.trim() || text.length > MAX_CHARACTERS || text.trim().length < MIN_CHARACTERS}
         className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-4 focus:ring-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
       >
         <div className="flex items-center justify-center space-x-2">
