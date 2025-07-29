@@ -9,6 +9,9 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // Get API URL from environment or use default
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
   const handleTextSubmit = async (inputText) => {
     if (!inputText.trim()) {
       setError('Please enter some text to analyze')
@@ -28,7 +31,7 @@ function App() {
     setSummary(null)
 
     try {
-      const response = await fetch('http://localhost:3001/api/analyze', {
+      const response = await fetch(`${API_URL}/api/analyze`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

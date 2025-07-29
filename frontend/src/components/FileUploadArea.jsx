@@ -6,6 +6,9 @@ const FileUploadArea = ({ onSubmit }) => {
   const [error, setError] = useState('')
   const fileInputRef = useRef(null)
 
+  // Get API URL from environment or use default
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
   const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
   const SUPPORTED_TYPES = {
     'application/pdf': 'PDF',
@@ -19,7 +22,7 @@ const FileUploadArea = ({ onSubmit }) => {
     formData.append('file', file)
 
     try {
-      const response = await fetch('http://localhost:3001/api/upload', {
+      const response = await fetch(`${API_URL}/api/upload`, {
         method: 'POST',
         body: formData,
       })
