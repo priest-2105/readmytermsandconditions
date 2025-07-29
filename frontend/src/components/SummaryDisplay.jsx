@@ -65,17 +65,24 @@ const SummaryDisplay = ({ summary }) => {
   ]
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Analysis Results
+    <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl mb-6">
+          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-3">
+          Analysis Complete
         </h2>
-        <p className="text-gray-600">
-          Your document has been analyzed and categorized into the following sections:
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Your document has been analyzed and categorized into the following sections for easy understanding
         </p>
       </div>
 
-      <div className="space-y-4">
+      {/* Sections */}
+      <div className="space-y-6">
         {sectionConfigs.map((config) => (
           <CollapsibleSection
             key={config.key}
@@ -87,16 +94,22 @@ const SummaryDisplay = ({ summary }) => {
         ))}
       </div>
 
-      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="flex items-start space-x-3">
-          <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      {/* Disclaimer */}
+      <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl">
+        <div className="flex items-start space-x-4">
+          <div className="flex-shrink-0">
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
           <div>
-            <p className="text-sm text-blue-800">
-              <strong>Disclaimer:</strong> This analysis is provided for informational purposes only. 
-              It should not be considered as legal advice. Always consult with a legal professional 
-              for specific legal matters.
+            <h4 className="text-sm font-semibold text-blue-900 mb-1">Important Disclaimer</h4>
+            <p className="text-sm text-blue-800 leading-relaxed">
+              This analysis is provided for informational purposes only. It should not be considered as legal advice. 
+              Always consult with a legal professional for specific legal matters and before making any decisions 
+              based on this analysis.
             </p>
           </div>
         </div>

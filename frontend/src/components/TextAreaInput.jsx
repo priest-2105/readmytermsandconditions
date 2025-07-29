@@ -6,6 +6,8 @@ const TextAreaInput = ({ onSubmit }) => {
   
   const MAX_CHARACTERS = 800
   const remainingChars = MAX_CHARACTERS - text.length
+  const isNearLimit = remainingChars < 100
+  const isOverLimit = remainingChars < 0
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -34,44 +36,68 @@ const TextAreaInput = ({ onSubmit }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="text-input" className="block text-sm font-medium text-gray-700 mb-2">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
+        <label htmlFor="text-input" className="block text-sm font-semibold text-gray-700">
           Enter your terms and conditions text
         </label>
-        <textarea
-          id="text-input"
-          value={text}
-          onChange={handleTextChange}
-          rows={8}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-          placeholder="Paste your terms and conditions text here..."
-          maxLength={MAX_CHARACTERS}
-        />
-        <div className="flex justify-between items-center mt-2">
-          <div className="text-sm text-gray-500">
-            {remainingChars} characters remaining
-          </div>
-          {remainingChars < 50 && (
-            <div className={`text-sm ${remainingChars < 0 ? 'text-red-600' : 'text-yellow-600'}`}>
-              {remainingChars < 0 ? 'Over limit!' : 'Approaching limit'}
+        <div className="relative">
+          <textarea
+            id="text-input"
+            value={text}
+            onChange={handleTextChange}
+            rows={10}
+            className={`w-full px-4 py-4 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 resize-none transition-all duration-200 ${
+              isOverLimit ? 'border-red-300 bg-red-50' : 
+              isNearLimit ? 'border-yellow-300 bg-yellow-50' : 
+              'border-gray-300 hover:border-gray-400'
+            }`}
+            placeholder="Paste your terms and conditions text here... We'll analyze it and break it down into easy-to-understand sections."
+            maxLength={MAX_CHARACTERS}
+          />
+          
+          {/* Character counter */}
+          <div className="absolute bottom-3 right-3 flex items-center space-x-2">
+            {isNearLimit && (
+              <div className={`text-xs px-2 py-1 rounded-full ${
+                isOverLimit ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+              }`}>
+                {isOverLimit ? 'Over limit!' : 'Approaching limit'}
+              </div>
+            )}
+            <div className={`text-xs font-medium ${
+              isOverLimit ? 'text-red-600' : 
+              isNearLimit ? 'text-yellow-600' : 
+              'text-gray-500'
+            }`}>
+              {remainingChars}/{MAX_CHARACTERS}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-800">{error}</p>
+        <div className="p-4 bg-red-50 border-l-4 border-red-400 rounded-lg shadow-sm">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-red-800">{error}</p>
+          </div>
         </div>
       )}
 
       <button
         type="submit"
         disabled={!text.trim() || text.length > MAX_CHARACTERS}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-4 focus:ring-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
       >
-        Analyze Text
+        <div className="flex items-center justify-center space-x-2">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+          <span>Analyze Text</span>
+        </div>
       </button>
     </form>
   )
