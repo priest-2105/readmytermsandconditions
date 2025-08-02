@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import FileUploadArea from '../components/FileUploadArea'
 import TextAreaInput from '../components/TextAreaInput'
 import SummaryDisplay from '../components/SummaryDisplay'
@@ -12,6 +13,27 @@ const AnalyzePage = () => {
 
   // Get API URL from environment or use default
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
+  // Animation variants
+  const fadeInUp = {
+    initial: { opacity: 0, y: 60 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.6, ease: "easeOut" }
+  }
+
+  const staggerContainer = {
+    animate: {
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  }
+
+  const scaleIn = {
+    initial: { opacity: 0, scale: 0.8 },
+    animate: { opacity: 1, scale: 1 },
+    transition: { duration: 0.5, ease: "easeOut" }
+  }
 
   const handleTextSubmit = async (inputText) => {
     if (!inputText.trim()) {
@@ -55,16 +77,30 @@ const AnalyzePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <motion.div 
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       {/* Navigation */}
-      <nav className="relative z-10 px-6 py-4">
+      <motion.nav 
+        className="relative z-10 px-6 py-4"
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+            <motion.div 
+              className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center"
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.6 }}
+            >
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-            </div>
+            </motion.div>
             <span className="text-xl font-bold text-gray-900">TermsAnalyzer</span>
           </Link>
           <Link 
@@ -74,89 +110,156 @@ const AnalyzePage = () => {
             ← Back to Home
           </Link>
         </div>
-      </nav>
+      </motion.nav>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full mb-6">
+        <motion.div 
+          className="text-center mb-12"
+          initial="initial"
+          animate="animate"
+          variants={staggerContainer}
+        >
+          <motion.div 
+            className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full mb-6"
+            variants={scaleIn}
+            whileHover={{ rotate: 360 }}
+            transition={{ duration: 0.6 }}
+          >
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-          </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-4">
+          </motion.div>
+          <motion.h1 
+            className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-4"
+            variants={fadeInUp}
+          >
             Terms & Conditions Analyzer
-          </h1>
-          <p className="text-xl text-gray-600">
+          </motion.h1>
+          <motion.p 
+            className="text-xl text-gray-600"
+            variants={fadeInUp}
+          >
             Upload a document or paste text to get an AI-powered analysis
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         {/* Error Display */}
         {error && (
-          <div className="mb-8 p-6 bg-red-50 border-l-4 border-red-400 rounded-lg shadow-sm">
+          <motion.div 
+            className="mb-8 p-6 bg-red-50 border-l-4 border-red-400 rounded-lg shadow-sm"
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 50 }}
+            transition={{ duration: 0.3 }}
+          >
             <div className="flex items-center">
               <svg className="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <p className="text-red-800 font-medium">{error}</p>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Input Sections */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-12">
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
+        <motion.div 
+          className="grid lg:grid-cols-2 gap-8 mb-12"
+          initial="initial"
+          animate="animate"
+          variants={staggerContainer}
+        >
+          <motion.div 
+            className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8"
+            variants={scaleIn}
+            whileHover={{ y: -5, scale: 1.02 }}
+            transition={{ duration: 0.3 }}
+          >
             <div className="flex items-center mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mr-4">
+              <motion.div 
+                className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mr-4"
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.6 }}
+              >
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
-              </div>
+              </motion.div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Upload Document</h2>
                 <p className="text-gray-600">Drag & drop or click to browse</p>
               </div>
             </div>
             <FileUploadArea onSubmit={handleFileSubmit} />
-          </div>
+          </motion.div>
 
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
+          <motion.div 
+            className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8"
+            variants={scaleIn}
+            whileHover={{ y: -5, scale: 1.02 }}
+            transition={{ duration: 0.3 }}
+          >
             <div className="flex items-center mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mr-4">
+              <motion.div 
+                className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mr-4"
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.6 }}
+              >
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
-              </div>
+              </motion.div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Paste Text</h2>
                 <p className="text-gray-600">Direct text input for quick analysis</p>
               </div>
             </div>
             <TextAreaInput onSubmit={handleTextSubmit} />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Loading State */}
         {loading && (
-          <div className="text-center py-16">
+          <motion.div 
+            className="text-center py-16"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.3 }}
+          >
             <div className="inline-flex flex-col items-center space-y-4">
               <div className="relative">
-                <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-indigo-600 rounded-full animate-spin" style={{ animationDelay: '-0.5s' }}></div>
+                <motion.div 
+                  className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                ></motion.div>
+                <motion.div 
+                  className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-indigo-600 rounded-full"
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                ></motion.div>
               </div>
               <div className="text-center">
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Analyzing your document...</h3>
                 <p className="text-gray-600">This may take a few moments</p>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Results */}
-        {summary && <SummaryDisplay summary={summary} />}
+        {summary && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            <SummaryDisplay summary={summary} />
+          </motion.div>
+        )}
       </div>
-    </div>
+    </motion.div>
   )
 }
 
