@@ -13,7 +13,7 @@ export default defineConfig({
       }
     },
     target: 'es2015',
-    minify: 'esbuild', // Changed from terser to esbuild
+    minify: 'esbuild',
     sourcemap: false
   },
   optimizeDeps: {
