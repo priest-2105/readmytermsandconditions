@@ -1,178 +1,445 @@
-import { Link } from 'react-router-dom'
+import { ArrowRight, Upload, Zap, CheckCircle, FileText, Shield, Clock, Users, Star, Play } from "lucide-react"
+import { Link } from "react-router-dom"
+import Navbar from "../components/navbar"
 
-const LandingPage = () => {
+export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Navigation */}
-      <nav className="relative z-10 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <span className="text-xl font-bold text-gray-900">TermsAnalyzer</span>
-          </div>
-          <Link 
-            to="/analyze"
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
-          >
-            Start Analyzing
-          </Link>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-white">
+    
+    <Navbar/>
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 py-20">
-          <div className="text-center">
-            {/* Main Icon */}
-            <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl mb-8 shadow-2xl">
-              <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-              </svg>
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50/30">
+        <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10"></div>
+
+        {/* Floating Elements */}
+        <div className="absolute top-20 left-10 w-20 h-20 bg-blue-200/30 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-32 h-32 bg-purple-200/30 rounded-full blur-xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-20 left-1/4 w-16 h-16 bg-indigo-200/30 rounded-full blur-xl animate-pulse delay-500"></div>
+
+        <div className="max-w-7xl mx-auto px-6 py-24 lg:py-32">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left Column - Text Content */}
+            <div className="text-center lg:text-left">
+              {/* Badge */}
+              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200 mb-6">
+                <Zap className="w-4 h-4 mr-2" />
+                AI-Powered Legal Analysis
+              </span>
+
+              {/* Main Heading */}
+              <h1 className="text-5xl lg:text-6xl font-bold tracking-tight mb-8">
+                <span className="bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
+                  Decode Legal Jargon
+                </span>
+                <br />
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  in Seconds
+                </span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-xl lg:text-2xl text-gray-600 mb-12 leading-relaxed">
+                Transform complex terms & conditions into clear, actionable insights. Our AI breaks down legal documents
+                so you can make informed decisions with confidence.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center mb-12">
+                <Link href="/analyze">
+                  <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-6 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center">
+                    <FileText className="mr-2 w-5 h-5" />
+                    Analyze Document Free
+                  </button>
+                </Link>
+                {/* <button className="border-2 border-gray-300 hover:bg-gray-50 text-gray-700 px-8 py-6 rounded-2xl font-semibold text-lg bg-transparent transition-all duration-300 flex items-center">
+                  <Play className="mr-2 w-5 h-5" />
+                  Watch Demo
+                </button> */}
+              </div>
+
+              {/* Social Proof */}
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-8 text-sm text-gray-500">
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 border-2 border-white"></div>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-400 to-green-600 border-2 border-white"></div>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-400 to-purple-600 border-2 border-white"></div>
+                  </div>
+                  <span>Trusted by 10,000+ users</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <span>4.9/5 rating</span>
+                </div>
+              </div>
             </div>
 
-            {/* Main Heading */}
-            <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-6 leading-tight">
-              Understand Terms & Conditions
-              <br />
-              <span className="text-blue-600">in Seconds</span>
-            </h1>
+            {/* Right Column - Interactive Preview */}
+            <div className="relative">
+              <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
+                {/* Mock Browser Header */}
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
+                  <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                  <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                  <div className="ml-4 text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
+                    termsanalyzer.com/analyze
+                  </div>
+                </div>
 
-            {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-12">
-              Stop skipping the fine print. Our AI-powered analyzer breaks down complex legal terms into 
-              simple, understandable insights so you can make informed decisions.
-            </p>
+                {/* Upload Area */}
+                <div className="border-2 border-dashed border-blue-200 rounded-2xl p-8 mb-6 bg-blue-50/30 hover:bg-blue-50/50 transition-colors cursor-pointer group">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                      <Upload className="w-8 h-8 text-blue-600" />
+                    </div>
+                    <p className="text-gray-700 font-medium mb-2">Drop your terms & conditions here</p>
+                    <p className="text-sm text-gray-500">PDF, DOCX, TXT or paste text directly</p>
+                  </div>
+                </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-              <Link 
-                to="/analyze"
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-xl hover:shadow-2xl"
-              >
-                Start Free Analysis
-              </Link>
-              <button className="bg-white text-gray-700 px-8 py-4 rounded-2xl font-semibold text-lg border-2 border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-200">
-                Watch Demo
-              </button>
-            </div>
+                {/* Sample Analysis Results */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl border border-green-200">
+                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-green-800">Analysis Complete</p>
+                      <p className="text-sm text-green-600">Document processed in 2.3 seconds</p>
+                    </div>
+                  </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-2">100%</div>
-                <div className="text-gray-600">Free to Use</div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-red-800">High Risk Clause Found</span>
+                      </div>
+                      <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
+                        Critical
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-yellow-800">Data Collection Terms</span>
+                      </div>
+                      <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                        Review
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-blue-800">Cancellation Policy</span>
+                      </div>
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                        Clear
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Action Button */}
+                  <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-xl font-semibold mt-6 flex items-center justify-center">
+                    <FileText className="mr-2 w-4 h-4" />
+                    View Full Analysis
+                  </button>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-2">AI-Powered</div>
-                <div className="text-gray-600">Advanced Analysis</div>
+
+              {/* Floating Cards */}
+              <div className="absolute -top-4 -right-4 bg-white rounded-xl shadow-lg p-4 border border-gray-100 animate-bounce">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-yellow-500" />
+                  <span className="text-sm font-medium">AI Processing</span>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-2">Instant</div>
-                <div className="text-gray-600">Results in Seconds</div>
+
+              <div className="absolute -bottom-4 -left-4 bg-white rounded-xl shadow-lg p-4 border border-gray-100">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-green-500" />
+                  <span className="text-sm font-medium">100% Secure</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Features Section */}
-      <div className="py-20 bg-white/50">
+      {/* Stats Section */}
+      <section className="py-16 bg-white border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              How It Works
-            </h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                100%
+              </div>
+              <div className="text-gray-600 font-medium">Free to Use</div>
+            </div>
+            <div className="text-center">
+              <Clock className="w-10 h-10 mx-auto mb-2 text-green-600" />
+              <div className="text-gray-600 font-medium">Instant Results</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+                AI
+              </div>
+              <div className="text-gray-600 font-medium">Powered Analysis</div>
+            </div>
+            <div className="text-center">
+              <Shield className="w-10 h-10 mx-auto mb-2 text-orange-600" />
+              <div className="text-gray-600 font-medium">Secure & Private</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section id="how-it-works" className="py-24 bg-gradient-to-br from-gray-50 to-blue-50/30">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-20">
+            <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-purple-50 text-purple-700 border border-purple-200 mb-4">
+              Simple Process
+            </span>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">How It Works</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Get clear insights from any terms and conditions document in three simple steps
+              Get clear insights from any legal document in three simple steps
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
             {/* Step 1 */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
+            <div className="relative bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 group border border-gray-100">
+              <div className="p-8 text-center">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Upload className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+                <div className="pt-8">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-blue-200 text-blue-600 mb-4">
+                    Step 1
+                  </span>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Upload Document</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Upload PDF, DOCX, or TXT files, or paste your terms and conditions text directly into our secure
+                    platform.
+                  </p>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Upload or Paste</h3>
-              <p className="text-gray-600">
-                Upload a PDF, DOCX, or TXT file, or simply paste your terms and conditions text directly.
-              </p>
             </div>
 
             {/* Step 2 */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
+            <div className="relative bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 group border border-gray-100">
+              <div className="p-8 text-center">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Zap className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+                <div className="pt-8">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-green-200 text-green-600 mb-4">
+                    Step 2
+                  </span>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">AI Analysis</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Our advanced AI processes the document, identifying key clauses, risks, and important terms in
+                    seconds.
+                  </p>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">AI Analysis</h3>
-              <p className="text-gray-600">
-                Our advanced AI analyzes the document and categorizes key information into easy-to-understand sections.
-              </p>
             </div>
 
             {/* Step 3 */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            <div className="relative bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 group border border-gray-100">
+              <div className="p-8 text-center">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <CheckCircle className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+                <div className="pt-8">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-purple-200 text-purple-600 mb-4">
+                    Step 3
+                  </span>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Get Clear Insights</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Receive a comprehensive breakdown of risks, obligations, rights, and key points in plain English.
+                  </p>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Get Insights</h3>
-              <p className="text-gray-600">
-                Receive a clear breakdown of risks, obligations, rights, and important points you need to know.
-              </p>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* CTA Section */}
-      <div className="py-20">
-        <div className="max-w-4xl mx-auto text-center px-6">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Ready to Understand Your Terms?
-          </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Don't let complex legal language confuse you. Get clear insights in seconds.
-          </p>
-          <Link 
-            to="/analyze"
-            className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-10 py-4 rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-xl"
-          >
-            Start Analyzing Now
-          </Link>
+      {/* Features Section */}
+      <section id="features" className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200 mb-4">
+                Powerful Features
+              </span>
+              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">Why Choose TermsAnalyzer?</h2>
+              <p className="text-xl text-gray-600 mb-8">
+                Our AI-powered platform makes legal documents accessible to everyone, not just lawyers.
+              </p>
+
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Risk Assessment</h3>
+                    <p className="text-gray-600">
+                      Automatically identifies potential risks and red flags in legal documents.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Users className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Plain English Translation</h3>
+                    <p className="text-gray-600">Converts complex legal jargon into clear, understandable language.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Instant Processing</h3>
+                    <p className="text-gray-600">Get comprehensive analysis results in seconds, not hours.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl p-8 shadow-2xl">
+                <image
+                  src="/placeholder.svg?height=400&width=500"
+                  alt="TermsAnalyzer Dashboard"
+                  width={500}
+                  height={400}
+                  className="rounded-2xl shadow-lg"
+                />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="py-24 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative max-w-4xl mx-auto text-center px-6">
+          <h2 className="text-4xl lg:text-5xl font-bold mb-6">Ready to Understand Your Terms?</h2>
+          <p className="text-xl lg:text-2xl mb-12 opacity-90">
+            Join thousands of users who trust TermsAnalyzer to decode legal documents. Start your free analysis today.
+          </p>
+          <Link href="/analyze">
+            <button className="bg-white text-blue-600 hover:bg-gray-100 px-10 py-6 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center mx-auto">
+              <FileText className="mr-2 w-5 h-5" />
+              Start Analyzing Now
+            </button>
+          </Link>
+          <p className="text-sm mt-6 opacity-75">No signup required • 100% free • Secure & private</p>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+      <footer className="bg-gray-900 text-white py-16">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid md:grid-cols-4 gap-8 mb-12">
+            <div className="md:col-span-2">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-bold">TermsAnalyzer</span>
+              </div>
+              <p className="text-gray-400 mb-6 max-w-md">
+                Making legal terms understandable for everyone. Empowering users to make informed decisions with
+                confidence.
+              </p>
             </div>
-            <span className="text-xl font-bold">TermsAnalyzer</span>
+
+            <div>
+              <h3 className="font-semibold mb-4">Product</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <Link href="#" className="hover:text-white transition-colors">
+                    Features
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white transition-colors">
+                    How it Works
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white transition-colors">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white transition-colors">
+                    API
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-4">Support</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <Link href="#" className="hover:text-white transition-colors">
+                    Help Center
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white transition-colors">
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white transition-colors">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white transition-colors">
+                    Terms of Service
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
-          <p className="text-gray-400 mb-4">
-            Making legal terms understandable for everyone
-          </p>
-          <p className="text-sm text-gray-500">
-            © 2024 TermsAnalyzer. This tool is for informational purposes only and should not be considered as legal advice.
-          </p>
+
+          <div className="border-t border-gray-800 pt-8 text-center">
+            <p className="text-gray-400">
+              © 2024 TermsAnalyzer. This tool is for informational purposes only and should not be considered as legal
+              advice.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
   )
 }
-
-export default LandingPage 
