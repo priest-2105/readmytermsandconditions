@@ -1,11 +1,12 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import FileUploadArea from '../components/FileUploadArea'
 import TextAreaInput from '../components/TextAreaInput'
 import SummaryDisplay from '../components/SummaryDisplay'
 
 const AnalyzePage = () => {
+  const location = useLocation()
   const [text, setText] = useState('')
   const [summary, setSummary] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -34,6 +35,19 @@ const AnalyzePage = () => {
     animate: { opacity: 1, scale: 1 },
     transition: { duration: 0.5, ease: "easeOut" }
   }
+
+  // Handle data passed from landing page
+  useEffect(() => {
+    if (location.state?.fromLanding) {
+      if (location.state.summary) {
+        // If we have results from file upload, display them
+        setSummary(location.state.summary)
+      } else if (location.state.textToAnalyze) {
+        // If we have text to analyze, process it automatically
+        processText(location.state.textToAnalyze)
+      }
+    }
+  }, [location.state])
 
   const handleTextSubmit = async (inputText) => {
     if (!inputText.trim()) {
@@ -162,94 +176,8 @@ const AnalyzePage = () => {
           </motion.div>
         )}
 
-        {/* Input Sections */}
-        <motion.div 
-          className="grid lg:grid-cols-2 gap-8 mb-12"
-          initial="initial"
-          animate="animate"
-          variants={staggerContainer}
-        >
-          <motion.div 
-            className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8"
-            variants={scaleIn}
-            whileHover={{ y: -5, scale: 1.02 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="flex items-center mb-6">
-              <motion.div 
-                className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mr-4"
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.6 }}
-              >
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-              </motion.div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Upload Document</h2>
-                <p className="text-gray-600">Drag & drop or click to browse</p>
-              </div>
-            </div>
-            <FileUploadArea onSubmit={handleFileSubmit} />
-          </motion.div>
-
-          <motion.div 
-            className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8"
-            variants={scaleIn}
-            whileHover={{ y: -5, scale: 1.02 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="flex items-center mb-6">
-              <motion.div 
-                className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mr-4"
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.6 }}
-              >
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              </motion.div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Paste Text</h2>
-                <p className="text-gray-600">Direct text input for quick analysis</p>
-              </div>
-            </div>
-            <TextAreaInput onSubmit={handleTextSubmit} />
-          </motion.div>
-        </motion.div>
-
-        {/* Loading State */}
-        {loading && (
-          <motion.div 
-            className="text-center py-16"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="inline-flex flex-col items-center space-y-4">
-              <div className="relative">
-                <motion.div 
-                  className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                ></motion.div>
-                <motion.div 
-                  className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-indigo-600 rounded-full"
-                  animate={{ rotate: -360 }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                ></motion.div>
-              </div>
-              <div className="text-center">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Analyzing your document...</h3>
-                <p className="text-gray-600">This may take a few moments</p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Results */}
-        {summary && (
+        {/* Show results if we have them from landing page */}
+        {summary && location.state?.fromLanding ? (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -257,6 +185,105 @@ const AnalyzePage = () => {
           >
             <SummaryDisplay summary={summary} />
           </motion.div>
+        ) : (
+          <>
+            {/* Input Sections */}
+            <motion.div 
+              className="grid lg:grid-cols-2 gap-8 mb-12"
+              initial="initial"
+              animate="animate"
+              variants={staggerContainer}
+            >
+              <motion.div 
+                className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8"
+                variants={scaleIn}
+                whileHover={{ y: -5, scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center mb-6">
+                  <motion.div 
+                    className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mr-4"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                  >
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </motion.div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Upload Document</h2>
+                    <p className="text-gray-600">Drag & drop or click to browse</p>
+                  </div>
+                </div>
+                <FileUploadArea onSubmit={handleFileSubmit} />
+              </motion.div>
+
+              <motion.div 
+                className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8"
+                variants={scaleIn}
+                whileHover={{ y: -5, scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center mb-6">
+                  <motion.div 
+                    className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mr-4"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                  >
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </motion.div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Paste Text</h2>
+                    <p className="text-gray-600">Direct text input for quick analysis</p>
+                  </div>
+                </div>
+                <TextAreaInput onSubmit={handleTextSubmit} />
+              </motion.div>
+            </motion.div>
+
+            {/* Loading State */}
+            {loading && (
+              <motion.div 
+                className="text-center py-16"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="inline-flex flex-col items-center space-y-4">
+                  <div className="relative">
+                    <motion.div 
+                      className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    ></motion.div>
+                    <motion.div 
+                      className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-indigo-600 rounded-full"
+                      animate={{ rotate: -360 }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                    ></motion.div>
+                  </div>
+                  <div className="text-center">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Analyzing your document...</h3>
+                    <p className="text-gray-600">This may take a few moments</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Results */}
+            {summary && (
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              >
+                <SummaryDisplay summary={summary} />
+              </motion.div>
+            )}
+          </>
         )}
       </div>
     </motion.div>

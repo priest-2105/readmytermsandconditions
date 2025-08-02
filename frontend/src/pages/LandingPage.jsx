@@ -1,9 +1,16 @@
 import { ArrowRight, Upload, Zap, CheckCircle, FileText, Shield, Clock, Users, Star, Play } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import Navbar from "../components/navbar"
 import { motion } from "framer-motion"
+import { useState } from "react"
+import FileUploadArea from "../components/FileUploadArea"
+import TextAreaInput from "../components/TextAreaInput"
 
 export default function LandingPage() {
+  const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState('upload') // 'upload' or 'text'
+  const [isProcessing, setIsProcessing] = useState(false)
+
   // Animation variants
   const fadeInUp = {
     initial: { opacity: 0, y: 60 },
@@ -35,6 +42,28 @@ export default function LandingPage() {
     initial: { opacity: 0, x: 60 },
     animate: { opacity: 1, x: 0 },
     transition: { duration: 0.6, ease: "easeOut" }
+  }
+
+  const handleFileSubmit = async (analysis) => {
+    setIsProcessing(true)
+    // Navigate to analyze page with the results
+    navigate('/analyze', { 
+      state: { 
+        summary: analysis,
+        fromLanding: true 
+      }
+    })
+  }
+
+  const handleTextSubmit = async (inputText) => {
+    setIsProcessing(true)
+    // Navigate to analyze page with the text to process
+    navigate('/analyze', { 
+      state: { 
+        textToAnalyze: inputText,
+        fromLanding: true 
+      }
+    })
   }
 
   return (
@@ -92,7 +121,7 @@ export default function LandingPage() {
           }}
         ></motion.div>
 
-        <div className="max-w-7xl mx-auto px-6 py-24 lg:py-32">
+        <div className="max-w-7xl mx-auto px-6 py-24 lg:py-36">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left Column - Text Content */}
             <motion.div className="text-center lg:text-left" variants={slideInLeft}>
@@ -128,30 +157,9 @@ export default function LandingPage() {
                 so you can make informed decisions with confidence.
               </motion.p>
 
-              {/* CTA Buttons */}
-              <motion.div 
-                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center mb-12"
-                variants={fadeInUp}
-              >
-                <Link to="/analyze">
-                  <motion.button 
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-6 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <FileText className="mr-2 w-5 h-5" />
-                    Analyze Document Free
-                  </motion.button>
-                </Link>
-                {/* <button className="border-2 border-gray-300 hover:bg-gray-50 text-gray-700 px-8 py-6 rounded-2xl font-semibold text-lg bg-transparent transition-all duration-300 flex items-center">
-                  <Play className="mr-2 w-5 h-5" />
-                  Watch Demo
-                </button> */}
-              </motion.div>
-
               {/* Social Proof */}
               <motion.div 
-                className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-8 text-sm text-gray-500"
+                className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-8 text-sm text-gray-500 mb-12"
                 variants={fadeInUp}
               >
                 <div className="flex items-center gap-2">
@@ -173,119 +181,143 @@ export default function LandingPage() {
               </motion.div>
             </motion.div>
 
-            {/* Right Column - Interactive Preview */}
+            {/* Right Column - Interactive Analysis Tool */}
             <motion.div className="relative" variants={slideInRight}>
               <motion.div 
                 className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100"
-                // whileHover={{ y: -10 }}
+                whileHover={{ y: -10 }}
                 transition={{ duration: 0.3 }}
               >
-                {/* Mock Browser Header */}
-                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
-                  <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                  <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                  <div className="ml-4 text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
-                    termsanalyzer.com/analyze
-                  </div>
-                </div>
-
-                {/* Upload Area */}
-                <motion.div 
-                  className="border-2 border-dashed border-blue-200 rounded-2xl p-8 mb-6 bg-blue-50/30 hover:bg-blue-50/50 transition-colors cursor-pointer group"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="text-center">
-                    <motion.div 
-                      className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
-                      animate={{ rotate: [0, 5, -5, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      <Upload className="w-8 h-8 text-blue-600" />
-                    </motion.div>
-                    <p className="text-gray-700 font-medium mb-2">Drop your terms & conditions here</p>
-                    <p className="text-sm text-gray-500">PDF, DOCX, TXT or paste text directly</p>
-                  </div>
-                </motion.div>
-
-                {/* Sample Analysis Results */}
-                <div className="space-y-4">
-                  <motion.div 
-                    className="flex items-center gap-3 p-4 bg-green-50 rounded-xl border border-green-200"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5, duration: 0.5 }}
-                  >
-                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-green-800">Analysis Complete</p>
-                      <p className="text-sm text-green-600">Document processed in 2.3 seconds</p>
-                    </div>
-                  </motion.div>
-
-                  <div className="space-y-3">
-                    <motion.div 
-                      className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.7, duration: 0.5 }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-red-800">High Risk Clause Found</span>
-                      </div>
-                      <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
-                        Critical
-                      </span>
-                    </motion.div>
-
-                    <motion.div 
-                      className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.9, duration: 0.5 }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-yellow-800">Data Collection Terms</span>
-                      </div>
-                      <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
-                        Review
-                      </span>
-                    </motion.div>
-
-                    <motion.div 
-                      className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.1, duration: 0.5 }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-blue-800">Cancellation Policy</span>
-                      </div>
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                        Clear
-                      </span>
-                    </motion.div>
-                  </div>
-
-                  {/* Action Button */}
-                  <motion.button 
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-xl font-semibold mt-6 flex items-center justify-center"
+                {/* Tab Navigation */}
+                <div className="flex space-x-1 mb-6 bg-gray-100 rounded-xl p-1">
+                  <motion.button
+                    onClick={() => setActiveTab('upload')}
+                    className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+                      activeTab === 'upload'
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1.3, duration: 0.5 }}
                   >
-                    <FileText className="mr-2 w-4 h-4" />
-                    View Full Analysis
+                    <div className="flex items-center justify-center space-x-2">
+                      <Upload className="w-4 h-4" />
+                      <span>Upload File</span>
+                    </div>
+                  </motion.button>
+                  <motion.button
+                    onClick={() => setActiveTab('text')}
+                    className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+                      activeTab === 'text'
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className="flex items-center justify-center space-x-2">
+                      <FileText className="w-4 h-4" />
+                      <span>Paste Text</span>
+                    </div>
                   </motion.button>
                 </div>
+
+                {/* Tab Content */}
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {activeTab === 'upload' ? (
+                    <div className="space-y-4">
+                      <div className="text-center">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Your Document</h3>
+                        <p className="text-sm text-gray-600 mb-4">PDF, DOCX, or TXT files supported</p>
+                      </div>
+                      <FileUploadArea onSubmit={handleFileSubmit} />
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="text-center">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Paste Your Text</h3>
+                        <p className="text-sm text-gray-600 mb-4">Minimum 100 characters required</p>
+                      </div>
+                      <TextAreaInput onSubmit={handleTextSubmit} />
+                    </div>
+                  )}
+                </motion.div>
+
+                {/* Processing State */}
+                {isProcessing && (
+                  <motion.div 
+                    className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="flex items-center justify-center space-x-3">
+                      <motion.div 
+                        className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      />
+                      <span className="text-blue-800 font-medium">Processing your document...</span>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Sample Results Preview */}
+                {!isProcessing && (
+                  <motion.div 
+                    className="mt-6 space-y-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.5 }}
+                  >
+                    {/* <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl border border-green-200">
+                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-green-800">Analysis Complete</p>
+                        <p className="text-sm text-green-600">Document processed in 2.3 seconds</p>
+                      </div>
+                    </div> */}
+
+                    {/* <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <span className="text-sm font-medium text-red-800">High Risk Clause Found</span>
+                        </div>
+                        <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
+                          Critical
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                          <span className="text-sm font-medium text-yellow-800">Data Collection Terms</span>
+                        </div>
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                          Review
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span className="text-sm font-medium text-blue-800">Cancellation Policy</span>
+                        </div>
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                          Clear
+                        </span>
+                      </div>
+                    </div> */}
+                  </motion.div>
+                )}
               </motion.div>
 
               {/* Floating Cards */}
