@@ -6,7 +6,7 @@ import PageAnalyzer from './PageAnalyzer'
 import Results from './Results'
 
 const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
-  const [activeTab, setActiveTab] = useState('text')
+  const [activeTab, setActiveTab] = useState('page') // Make page analyzer the default
   const [results, setResults] = useState(null)
   const [error, setError] = useState('')
 
@@ -41,11 +41,9 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
         analysisTimestamp: Date.now()
       })
       
-      // Redirect to frontend (without URL parameters)
-      chrome.tabs.create({ url: `${FRONTEND_URL}/analyze` })
-      
-      // Close the popup
-      window.close()
+      // Set results to show in extension
+      setResults(data)
+      setIsAnalyzing(false)
       
     } catch (err) {
       setError(err.message || 'An error occurred while analyzing the text')
@@ -66,12 +64,12 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
   }
 
   const tabs = [
+    { id: 'page', label: 'Page', icon: Globe },
     { id: 'text', label: 'Text', icon: FileText },
     { id: 'file', label: 'File', icon: Upload },
-    { id: 'page', label: 'Page', icon: Globe },
   ]
 
-  // If we have results, show them briefly before redirecting
+  // If we have results, show limited results with option to view full results
   if (results) {
     return (
       <div className="p-4 h-full flex flex-col">
@@ -79,32 +77,99 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
           <h2 className="text-lg font-semibold text-gray-900">Analysis Complete!</h2>
           <CheckCircle className="w-5 h-5 text-green-500" />
         </div>
-        <div className="flex-1 overflow-y-auto">
-          <div className="text-center py-8">
-            <div className="mb-4">
-              <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Redirecting to Full Results</h3>
-              <p className="text-sm text-gray-600">
-                Opening detailed analysis in a new tab...
-              </p>
-            </div>
+        
+        <div className="flex-1 overflow-y-auto space-y-4">
+          {/* Limited Results Display */}
+          <div className="space-y-3">
+            {/* Things to Know */}
+            {results.ThingsToKnow && results.ThingsToKnow.length > 0 && (
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <h3 className="text-sm font-semibold text-blue-900 mb-2">Key Things to Know</h3>
+                <ul className="text-xs text-blue-800 space-y-1">
+                  {results.ThingsToKnow.slice(0, 2).map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-blue-600 mr-2">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                  {results.ThingsToKnow.length > 2 && (
+                    <li className="text-blue-600 text-xs italic">
+                      +{results.ThingsToKnow.length - 2} more items
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {/* Important Points */}
+            {results.ImportantPoints && results.ImportantPoints.length > 0 && (
+              <div className="bg-yellow-50 p-3 rounded-lg">
+                <h3 className="text-sm font-semibold text-yellow-900 mb-2">Important Points</h3>
+                <ul className="text-xs text-yellow-800 space-y-1">
+                  {results.ImportantPoints.slice(0, 2).map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-yellow-600 mr-2">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                  {results.ImportantPoints.length > 2 && (
+                    <li className="text-yellow-600 text-xs italic">
+                      +{results.ImportantPoints.length - 2} more items
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {/* Risks */}
+            {results.Risks && results.Risks.length > 0 && (
+              <div className="bg-red-50 p-3 rounded-lg">
+                <h3 className="text-sm font-semibold text-red-900 mb-2">Potential Risks</h3>
+                <ul className="text-xs text-red-800 space-y-1">
+                  {results.Risks.slice(0, 2).map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-red-600 mr-2">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                  {results.Risks.length > 2 && (
+                    <li className="text-red-600 text-xs italic">
+                      +{results.Risks.length - 2} more items
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {/* View Full Results Button */}
+          <div className="pt-4 border-t border-gray-200">
             <button
               onClick={() => {
                 chrome.tabs.create({ url: `${FRONTEND_URL}/analyze` })
                 window.close()
               }}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+              className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center space-x-2"
             >
-              Open Results
+              <Sparkles className="w-4 h-4" />
+              <span>View Full Results</span>
             </button>
           </div>
+
+          {/* New Analysis Button */}
+          <button
+            onClick={handleNewAnalysis}
+            className="w-full px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            New Analysis
+          </button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="p-4 h-full flex flex-col">
+    <div className="p-4 h-full flex flex-col relative">
       {/* Error Display */}
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex-shrink-0">
@@ -153,12 +218,12 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
         )}
       </div>
 
-      {/* Loading State */}
+      {/* Loading State - Show only spinner when analyzing */}
       {isAnalyzing && (
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 flex-shrink-0">
-          <div className="flex items-center justify-center space-x-3">
-            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm text-blue-800 font-medium">Analyzing...</span>
+        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="text-center">
+            <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-sm text-gray-600 font-medium">Analyzing...</p>
           </div>
         </div>
       )}

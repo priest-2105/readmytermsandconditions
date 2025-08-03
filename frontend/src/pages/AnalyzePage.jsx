@@ -9,6 +9,12 @@ const AnalyzePage = () => {
   const location = useLocation()
   const [text, setText] = useState('')
   const [summary, setSummary] = useState(null)
+  
+  // Wrapper for setSummary with logging
+  const setSummaryWithLogging = (data) => {
+    console.log('🎯 Setting summary state:', data)
+    setSummary(data)
+  }
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showInputs, setShowInputs] = useState(true)
@@ -40,31 +46,49 @@ const AnalyzePage = () => {
   // Check for results from Chrome storage or URL parameters
   useEffect(() => {
     const checkForResults = async () => {
+      console.log('=== FRONTEND: Checking for analysis results ===')
+      
       // First, check if we're in a Chrome extension context
       if (typeof chrome !== 'undefined' && chrome.storage) {
+        console.log('✅ Chrome storage is available')
         try {
           const result = await chrome.storage.local.get(['analysisResults', 'analysisTimestamp'])
+          console.log('📦 Chrome storage result:', result)
           
           if (result.analysisResults) {
+            console.log('📊 Found analysis results in storage')
+            console.log('📊 Results data:', result.analysisResults)
+            console.log('⏰ Timestamp:', result.analysisTimestamp)
+            
             // Check if results are recent (within last 5 minutes)
             const isRecent = result.analysisTimestamp && 
               (Date.now() - result.analysisTimestamp) < 5 * 60 * 1000
             
+            console.log('⏰ Results are recent:', isRecent)
+            console.log('⏰ Time difference:', Date.now() - result.analysisTimestamp, 'ms')
+            
             if (isRecent) {
-              setSummary(result.analysisResults)
+              console.log('✅ Setting summary from Chrome storage')
+              setSummaryWithLogging(result.analysisResults)
               setShowInputs(false)
               
               // Clear the storage after reading
               await chrome.storage.local.remove(['analysisResults', 'analysisTimestamp'])
+              console.log('🗑️ Cleared Chrome storage')
               return
             } else {
+              console.log('⏰ Results are too old, clearing storage')
               // Clear old results
               await chrome.storage.local.remove(['analysisResults', 'analysisTimestamp'])
             }
+          } else {
+            console.log('❌ No analysis results found in Chrome storage')
           }
         } catch (error) {
-          console.error('Error reading from Chrome storage:', error)
+          console.error('❌ Error reading from Chrome storage:', error)
         }
+      } else {
+        console.log('❌ Chrome storage is not available')
       }
 
       // Fallback: Check for results in URL parameters (for backward compatibility)
@@ -72,28 +96,37 @@ const AnalyzePage = () => {
       const resultsParam = urlParams.get('results')
       
       if (resultsParam) {
+        console.log('📊 Found results in URL parameters')
         try {
           const decodedResults = JSON.parse(decodeURIComponent(resultsParam))
-          setSummary(decodedResults)
+          console.log('📊 URL results data:', decodedResults)
+          setSummaryWithLogging(decodedResults)
           setShowInputs(false)
           return
         } catch (error) {
-          console.error('Failed to parse results from URL:', error)
+          console.error('❌ Failed to parse results from URL:', error)
           setError('Invalid results data received')
         }
+      } else {
+        console.log('❌ No results found in URL parameters')
       }
 
       // Handle data passed from landing page
       if (location.state?.fromLanding) {
+        console.log('📊 Found data from landing page:', location.state)
         if (location.state.summary) {
+          console.log('📊 Setting summary from landing page state')
           // If we have results from file upload, display them
-          setSummary(location.state.summary)
+          setSummaryWithLogging(location.state.summary)
           setShowInputs(false)
         } else if (location.state.textToAnalyze) {
+          console.log('📝 Processing text from landing page state')
           // If we have text to analyze, process it automatically
           setShowInputs(false)
           processText(location.state.textToAnalyze)
         }
+      } else {
+        console.log('❌ No landing page state found')
       }
     }
 
@@ -111,7 +144,7 @@ const AnalyzePage = () => {
   }
 
   const handleFileSubmit = async (analysis) => {
-    setSummary(analysis)
+    setSummaryWithLogging(analysis)
     setShowInputs(false)
   }
 
@@ -135,7 +168,7 @@ const AnalyzePage = () => {
       }
 
       const data = await response.json()
-      setSummary(data)
+      setSummaryWithLogging(data)
     } catch (err) {
       setError(err.message || 'An error occurred while analyzing the text')
     } finally {
