@@ -13,6 +13,7 @@ const AnalyzePage = () => {
   // Wrapper for setSummary with logging
   const setSummaryWithLogging = (data) => {
     console.log('🎯 Setting summary state:', data)
+    console.log('🎯 Data source: Extension analysis')
     setSummary(data)
   }
   const [loading, setLoading] = useState(false)
@@ -43,13 +44,38 @@ const AnalyzePage = () => {
     transition: { duration: 0.5, ease: "easeOut" }
   }
 
-  // Check for results from Chrome storage or URL parameters
+  // Check for results from URL parameters first, then Chrome storage
   useEffect(() => {
     const checkForResults = async () => {
       console.log('=== FRONTEND: Checking for analysis results ===')
       
-      // First, check if we're in a Chrome extension context
-      if (typeof chrome !== 'undefined' && chrome.storage) {
+      // First priority: Check for results in URL parameters
+      const urlParams = new URLSearchParams(window.location.search)
+      const resultsParam = urlParams.get('results')
+      
+      if (resultsParam) {
+        console.log('📊 Found results in URL parameters')
+        try {
+          const decodedResults = JSON.parse(decodeURIComponent(resultsParam))
+          console.log('📊 URL results data:', decodedResults)
+          setSummaryWithLogging(decodedResults)
+          setShowInputs(false)
+          
+          // Clean up URL by removing the parameter
+          const newUrl = window.location.pathname
+          window.history.replaceState({}, document.title, newUrl)
+          console.log('🧹 Cleaned up URL parameters')
+          return
+        } catch (error) {
+          console.error('❌ Failed to parse results from URL:', error)
+          setError('Invalid results data received')
+        }
+      } else {
+        console.log('❌ No results found in URL parameters')
+      }
+      
+      // Second priority: Check if we're in a Chrome extension context
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         console.log('✅ Chrome storage is available')
         try {
           const result = await chrome.storage.local.get(['analysisResults', 'analysisTimestamp'])
@@ -88,27 +114,8 @@ const AnalyzePage = () => {
           console.error('❌ Error reading from Chrome storage:', error)
         }
       } else {
-        console.log('❌ Chrome storage is not available')
-      }
-
-      // Fallback: Check for results in URL parameters (for backward compatibility)
-      const urlParams = new URLSearchParams(window.location.search)
-      const resultsParam = urlParams.get('results')
-      
-      if (resultsParam) {
-        console.log('📊 Found results in URL parameters')
-        try {
-          const decodedResults = JSON.parse(decodeURIComponent(resultsParam))
-          console.log('📊 URL results data:', decodedResults)
-          setSummaryWithLogging(decodedResults)
-          setShowInputs(false)
-          return
-        } catch (error) {
-          console.error('❌ Failed to parse results from URL:', error)
-          setError('Invalid results data received')
-        }
-      } else {
-        console.log('❌ No results found in URL parameters')
+        console.log('❌ Chrome storage is not available - this is normal for web pages')
+        console.log('📝 Note: Chrome storage is only available in extension context')
       }
 
       // Handle data passed from landing page
@@ -250,6 +257,24 @@ const AnalyzePage = () => {
             Upload a document or paste text to get an AI-powered analysis
           </motion.p>
         </motion.div>
+
+        {/* Success Message for Extension Data */}
+        {summary && window.location.search.includes('results=') && (
+          <motion.div 
+            className="mb-8 p-6 bg-green-50 border-l-4 border-green-400 rounded-lg shadow-sm"
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 50 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <p className="text-green-800 font-medium">Analysis results received from extension successfully!</p>
+            </div>
+          </motion.div>
+        )}
 
         {/* Error Display */}
         {error && (

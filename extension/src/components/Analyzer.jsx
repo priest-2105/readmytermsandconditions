@@ -43,10 +43,19 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
         data = await response.json()
       }
       
-      // Store results in Chrome storage
+      // Store results in Chrome storage with session-specific key
+      const sessionKey = `analysis_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       await chrome.storage.local.set({ 
-        analysisResults: data,
-        analysisTimestamp: Date.now()
+        [sessionKey]: {
+          analysisResults: data,
+          analysisTimestamp: Date.now(),
+          sessionId: sessionKey
+        }
+      })
+      
+      // Store the current session key for this tab
+      await chrome.storage.local.set({ 
+        currentSessionKey: sessionKey
       })
       
       // Set results to show in extension
@@ -212,7 +221,10 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
         <div className="flex-shrink-0 space-y-2 pt-4 border-t border-gray-200">
           <button
             onClick={() => {
-              chrome.tabs.create({ url: `${FRONTEND_URL}/analyze` })
+              // Store results in Chrome storage AND pass via URL parameter as fallback
+              const encodedResults = encodeURIComponent(JSON.stringify(results))
+              const url = `${FRONTEND_URL}/analyze?results=${encodedResults}`
+              chrome.tabs.create({ url })
               window.close()
             }}
             className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center space-x-2"
