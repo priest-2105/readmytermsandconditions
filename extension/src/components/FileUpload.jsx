@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { Upload, File, X } from 'lucide-react'
 
-const FileUpload = ({ onSubmit, isAnalyzing }) => {
+const FileUpload = ({ onSubmit, isAnalyzing, disabled = false }) => {
   const [file, setFile] = useState(null)
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef(null)
@@ -147,11 +147,11 @@ const FileUpload = ({ onSubmit, isAnalyzing }) => {
       {file && (
         <button
           onClick={handleSubmit}
-          disabled={isAnalyzing}
+          disabled={isAnalyzing || disabled}
           className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Upload className="w-3 h-3" />
-          <span>Analyze File</span>
+          <span>{disabled ? 'Cooldown Active' : 'Analyze File'}</span>
         </button>
       )}
     </div>

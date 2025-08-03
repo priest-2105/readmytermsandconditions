@@ -9,6 +9,8 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
   const [activeTab, setActiveTab] = useState('page') // Make page analyzer the default
   const [results, setResults] = useState(null)
   const [error, setError] = useState('')
+  const [timeRemaining, setTimeRemaining] = useState(0)
+  const [canAnalyze, setCanAnalyze] = useState(true)
 
   // Get the frontend URL from environment or use default
   const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || 'https://readmytermsandconditions-frontend.vercel.app'
@@ -45,10 +47,11 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
       
       // Store results in Chrome storage with session-specific key
       const sessionKey = `analysis_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      const analysisTime = Date.now()
       await chrome.storage.local.set({ 
         [sessionKey]: {
           analysisResults: data,
-          analysisTimestamp: Date.now(),
+          analysisTimestamp: analysisTime,
           sessionId: sessionKey
         }
       })
@@ -61,6 +64,10 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
       // Set results to show in extension
       setResults(data)
       setIsAnalyzing(false)
+      setCanAnalyze(false)
+      
+      // Start the 30-minute timer
+      startAnalysisTimer(analysisTime)
       
     } catch (err) {
       setError(err.message || 'An error occurred while analyzing the text')
@@ -91,9 +98,13 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
               
               if (isRecent) {
                 setResults(sessionData.analysisResults)
+                setCanAnalyze(false)
+                // Restart the timer for the existing analysis
+                startAnalysisTimer(sessionData.analysisTimestamp)
               } else {
                 // Clear old session data
                 await chrome.storage.local.remove([sessionResult.currentSessionKey, 'currentSessionKey'])
+                setCanAnalyze(true)
               }
             }
           }
@@ -105,6 +116,43 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
 
     loadPreviousResults()
   }, [])
+
+  // Start the 30-minute analysis timer
+  const startAnalysisTimer = (analysisTime) => {
+    const timer = setInterval(() => {
+      const now = Date.now()
+      const elapsed = now - analysisTime
+      const remaining = (30 * 60 * 1000) - elapsed // 30 minutes in milliseconds
+      
+      if (remaining <= 0) {
+        // Timer expired - reset everything
+        setTimeRemaining(0)
+        setCanAnalyze(true)
+        setResults(null)
+        clearInterval(timer)
+        
+        // Clear the current session
+        chrome.storage.local.get(['currentSessionKey']).then((result) => {
+          if (result.currentSessionKey) {
+            chrome.storage.local.remove([result.currentSessionKey, 'currentSessionKey'])
+          }
+        })
+      } else {
+        // Update remaining time
+        setTimeRemaining(remaining)
+      }
+    }, 1000) // Update every second
+    
+    // Store timer reference for cleanup
+    return timer
+  }
+
+  // Format time remaining as MM:SS
+  const formatTimeRemaining = (milliseconds) => {
+    const minutes = Math.floor(milliseconds / (1000 * 60))
+    const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000)
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  }
 
   // Clean up old sessions
   const cleanupOldSessions = async () => {
@@ -274,12 +322,31 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
             <span>View Full Results</span>
           </button>
 
-          <button
-            onClick={handleNewAnalysis}
-            className="w-full px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            New Analysis
-          </button>
+          {/* Timer Display */}
+          {!canAnalyze && timeRemaining > 0 && (
+            <div className="text-center py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-xs text-yellow-800 font-medium">
+                Next analysis available in: {formatTimeRemaining(timeRemaining)}
+              </p>
+            </div>
+          )}
+
+          {/* Conditional New Analysis Button */}
+          {canAnalyze ? (
+            <button
+              onClick={handleNewAnalysis}
+              className="w-full px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              New Analysis
+            </button>
+          ) : (
+            <button
+              disabled
+              className="w-full px-4 py-2 bg-gray-100 text-gray-400 text-sm font-medium rounded-lg cursor-not-allowed"
+            >
+              New Analysis (30 min cooldown)
+            </button>
+          )}
         </div>
       </div>
     )
@@ -320,17 +387,26 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
 
       {/* Tab Content - Scrollable */}
       <div className="flex-1 overflow-y-auto space-y-4">
+        {!canAnalyze && (
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
+            <p className="text-sm text-yellow-800 font-medium">
+              ⏰ Analysis cooldown active. Please wait {formatTimeRemaining(timeRemaining)} before next analysis.
+            </p>
+          </div>
+        )}
+        
         {activeTab === 'text' && (
-          <TextInput onSubmit={handleAnalysis} isAnalyzing={isAnalyzing} />
+          <TextInput onSubmit={handleAnalysis} isAnalyzing={isAnalyzing} disabled={!canAnalyze} />
         )}
         {activeTab === 'file' && (
-          <FileUpload onSubmit={handleAnalysis} isAnalyzing={isAnalyzing} />
+          <FileUpload onSubmit={handleAnalysis} isAnalyzing={isAnalyzing} disabled={!canAnalyze} />
         )}
         {activeTab === 'page' && (
           <PageAnalyzer 
             onSubmit={handleAnalysis} 
             isAnalyzing={isAnalyzing}
             onDetection={handlePageDetection}
+            disabled={!canAnalyze}
           />
         )}
       </div>
