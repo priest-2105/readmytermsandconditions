@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Globe, Sparkles, AlertTriangle, CheckCircle, Search, FileText } from 'lucide-react'
 
-const PageAnalyzer = ({ onSubmit, isAnalyzing, onDetection }) => {
+const PageAnalyzer = ({ onSubmit, isAnalyzing, onDetection, disabled = false }) => {
   const [pageInfo, setPageInfo] = useState(null)
   const [detectionStatus, setDetectionStatus] = useState('checking') 
   const [extractedText, setExtractedText] = useState('')
@@ -208,11 +208,11 @@ const PageAnalyzer = ({ onSubmit, isAnalyzing, onDetection }) => {
             </p>
             <button
               onClick={handleAnalyzePage}
-              disabled={isAnalyzing}
+              disabled={isAnalyzing || disabled}
               className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FileText className="w-3 h-3" />
-              <span>Analyze Legal Content</span>
+              <span>{disabled ? 'Cooldown Active' : 'Analyze Legal Content'}</span>
             </button>
           </div>
         )}
@@ -228,11 +228,11 @@ const PageAnalyzer = ({ onSubmit, isAnalyzing, onDetection }) => {
             </p>
             <button
               onClick={handleAnalyzePage}
-              disabled={isAnalyzing}
+              disabled={isAnalyzing || disabled}
               className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Search className="w-3 h-3" />
-              <span>Analyze Page Content</span>
+              <span>{disabled ? 'Cooldown Active' : 'Analyze Page Content'}</span>
             </button>
           </div>
         )}

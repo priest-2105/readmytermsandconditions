@@ -37,19 +37,51 @@ const AnalyzePage = () => {
     transition: { duration: 0.5, ease: "easeOut" }
   }
 
-  // Handle data passed from landing page
+  // Handle data passed from landing page and Chrome storage
   useEffect(() => {
-    if (location.state?.fromLanding) {
-      if (location.state.summary) {
-        // If we have results from file upload, display them
-        setSummary(location.state.summary)
-        setShowInputs(false)
-      } else if (location.state.textToAnalyze) {
-        // If we have text to analyze, process it automatically
-        setShowInputs(false)
-        processText(location.state.textToAnalyze)
+    const checkForResults = async () => {
+      // First, check if we're in a Chrome extension context and read from storage
+      if (typeof chrome !== 'undefined' && chrome.storage) {
+        try {
+          const result = await chrome.storage.local.get(['analysisResults', 'analysisTimestamp'])
+          
+          if (result.analysisResults) {
+            // Check if results are recent (within last 5 minutes)
+            const isRecent = result.analysisTimestamp && 
+              (Date.now() - result.analysisTimestamp) < 5 * 60 * 1000
+            
+            if (isRecent) {
+              setSummary(result.analysisResults)
+              setShowInputs(false)
+              
+              // Clear the storage after reading
+              await chrome.storage.local.remove(['analysisResults', 'analysisTimestamp'])
+              return
+            } else {
+              // Clear old results
+              await chrome.storage.local.remove(['analysisResults', 'analysisTimestamp'])
+            }
+          }
+        } catch (error) {
+          console.error('Error reading from Chrome storage:', error)
+        }
+      }
+
+      // Handle data passed from landing page
+      if (location.state?.fromLanding) {
+        if (location.state.summary) {
+          // If we have results from file upload, display them
+          setSummary(location.state.summary)
+          setShowInputs(false)
+        } else if (location.state.textToAnalyze) {
+          // If we have text to analyze, process it automatically
+          setShowInputs(false)
+          processText(location.state.textToAnalyze)
+        }
       }
     }
+
+    checkForResults()
   }, [location.state, processText])
 
   const handleTextSubmit = useCallback(async (inputText) => {

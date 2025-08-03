@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { Upload, File, X } from 'lucide-react'
 
-const FileUpload = ({ onSubmit, isAnalyzing }) => {
+const FileUpload = ({ onSubmit, isAnalyzing, disabled = false }) => {
   const [file, setFile] = useState(null)
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef(null)
@@ -40,6 +40,32 @@ const FileUpload = ({ onSubmit, isAnalyzing }) => {
   const handleSubmit = async () => {
     if (!file || isAnalyzing) return
 
+    if (file.type === 'application/pdf') {
+      // For PDF files, upload directly to API
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || 'https://readmytermsandconditions.onrender.com'
+        const response = await fetch(`${API_URL}/api/upload`, {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to analyze PDF')
+        }
+
+        const data = await response.json()
+        onSubmit(data) // Pass the results directly
+      } catch (error) {
+        alert(`Error analyzing PDF: ${error.message}`)
+      }
+      return
+    }
+
+    // For text files, read and analyze
     const reader = new FileReader()
     reader.onload = (e) => {
       const text = e.target.result
@@ -121,11 +147,11 @@ const FileUpload = ({ onSubmit, isAnalyzing }) => {
       {file && (
         <button
           onClick={handleSubmit}
-          disabled={isAnalyzing}
+          disabled={isAnalyzing || disabled}
           className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Upload className="w-3 h-3" />
-          <span>Analyze File</span>
+          <span>{disabled ? 'Cooldown Active' : 'Analyze File'}</span>
         </button>
       )}
     </div>

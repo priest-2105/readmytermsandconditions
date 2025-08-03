@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const TextAreaInput = ({ onSubmit }) => {
+const TextAreaInput = ({ onSubmit, disabled = false }) => {
   const [text, setText] = useState('')
   const [error, setError] = useState('')
   
@@ -127,14 +127,14 @@ const TextAreaInput = ({ onSubmit }) => {
 
       <button
         type="submit"
-        disabled={!text.trim() || text.length > MAX_CHARACTERS || text.trim().length < MIN_CHARACTERS}
+        disabled={!text.trim() || text.length > MAX_CHARACTERS || text.trim().length < MIN_CHARACTERS || disabled}
         className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-4 focus:ring-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
       >
         <div className="flex items-center justify-center space-x-2">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
           </svg>
-          <span>Analyze Text</span>
+          <span>{disabled ? 'Cooldown Active' : 'Analyze Text'}</span>
         </div>
       </button>
     </form>

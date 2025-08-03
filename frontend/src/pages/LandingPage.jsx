@@ -2,7 +2,7 @@ import { ArrowRight, Upload, Zap, CheckCircle, FileText, Shield, Clock, Users, S
 import { Link, useNavigate } from "react-router-dom"
 import Navbar from "../components/navbar"
 import { motion } from "framer-motion"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import FileUploadArea from "../components/FileUploadArea"
 import TextAreaInput from "../components/TextAreaInput"
 
@@ -10,6 +10,8 @@ export default function LandingPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('upload') // 'upload' or 'text'
   const [isProcessing, setIsProcessing] = useState(false)
+  const [timeRemaining, setTimeRemaining] = useState(0)
+  const [canAnalyze, setCanAnalyze] = useState(true)
 
   // Animation variants
   const fadeInUp = {
@@ -44,8 +46,82 @@ export default function LandingPage() {
     transition: { duration: 0.6, ease: "easeOut" }
   }
 
+  // Cooldown timer functions
+  const startAnalysisTimer = () => {
+    const cooldownDuration = 30 * 60 * 1000 // 30 minutes in milliseconds
+    const endTime = Date.now() + cooldownDuration
+    
+    // Store the end time in localStorage
+    localStorage.setItem('analysisCooldownEnd', endTime.toString())
+    
+    setCanAnalyze(false)
+    setTimeRemaining(cooldownDuration)
+    
+    const timer = setInterval(() => {
+      const remaining = endTime - Date.now()
+      
+      if (remaining <= 0) {
+        clearInterval(timer)
+        setCanAnalyze(true)
+        setTimeRemaining(0)
+        localStorage.removeItem('analysisCooldownEnd')
+      } else {
+        setTimeRemaining(remaining)
+      }
+    }, 1000)
+  }
+
+  const formatTimeRemaining = (ms) => {
+    const minutes = Math.floor(ms / 60000)
+    const seconds = Math.floor((ms % 60000) / 1000)
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  }
+
+  const checkLocalStorage = () => {
+    const storedEndTime = localStorage.getItem('analysisCooldownEnd')
+    if (storedEndTime) {
+      const endTime = parseInt(storedEndTime)
+      const remaining = endTime - Date.now()
+      
+      if (remaining > 0) {
+        setCanAnalyze(false)
+        setTimeRemaining(remaining)
+        
+        const timer = setInterval(() => {
+          const currentRemaining = endTime - Date.now()
+          
+          if (currentRemaining <= 0) {
+            clearInterval(timer)
+            setCanAnalyze(true)
+            setTimeRemaining(0)
+            localStorage.removeItem('analysisCooldownEnd')
+          } else {
+            setTimeRemaining(currentRemaining)
+          }
+        }, 1000)
+      } else {
+        localStorage.removeItem('analysisCooldownEnd')
+        setCanAnalyze(true)
+        setTimeRemaining(0)
+      }
+    }
+  }
+
+  // Check localStorage on component mount
+  useEffect(() => {
+    checkLocalStorage()
+  }, [])
+
   const handleFileSubmit = async (analysis) => {
+    if (!canAnalyze) {
+      return
+    }
+    
     setIsProcessing(true)
+    // Store results in localStorage and start timer
+    localStorage.setItem('analysisResults', JSON.stringify(analysis))
+    startAnalysisTimer()
+    
     // Navigate to analyze page with the results
     navigate('/analyze', { 
       state: { 
@@ -56,7 +132,15 @@ export default function LandingPage() {
   }
 
   const handleTextSubmit = async (inputText) => {
+    if (!canAnalyze) {
+      return
+    }
+    
     setIsProcessing(true)
+    // Store text in localStorage and start timer
+    localStorage.setItem('textToAnalyze', inputText)
+    startAnalysisTimer()
+    
     // Navigate to analyze page with the text to process
     navigate('/analyze', { 
       state: { 
@@ -192,13 +276,14 @@ export default function LandingPage() {
                 <div className="flex space-x-1 mb-6 bg-gray-100 rounded-xl p-1">
                   <motion.button
                     onClick={() => setActiveTab('upload')}
+                    disabled={!canAnalyze}
                     className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
                       activeTab === 'upload'
                         ? 'bg-white text-blue-600 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    } ${!canAnalyze ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    whileHover={canAnalyze ? { scale: 1.02 } : {}}
+                    whileTap={canAnalyze ? { scale: 0.98 } : {}}
                   >
                     <div className="flex items-center justify-center space-x-2">
                       <Upload className="w-4 h-4" />
@@ -207,13 +292,14 @@ export default function LandingPage() {
                   </motion.button>
                   <motion.button
                     onClick={() => setActiveTab('text')}
+                    disabled={!canAnalyze}
                     className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
                       activeTab === 'text'
                         ? 'bg-white text-blue-600 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    } ${!canAnalyze ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    whileHover={canAnalyze ? { scale: 1.02 } : {}}
+                    whileTap={canAnalyze ? { scale: 0.98 } : {}}
                   >
                     <div className="flex items-center justify-center space-x-2">
                       <FileText className="w-4 h-4" />
@@ -221,6 +307,34 @@ export default function LandingPage() {
                     </div>
                   </motion.button>
                 </div>
+
+                {/* Cooldown Warning */}
+                {!canAnalyze && (
+                  <motion.div 
+                    className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                          <Clock className="w-5 h-5 text-yellow-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-yellow-800">Analysis Cooldown Active</p>
+                          <p className="text-sm text-yellow-600">Please wait before starting a new analysis</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-yellow-700">
+                          {formatTimeRemaining(timeRemaining)}
+                        </div>
+                        <div className="text-xs text-yellow-600">remaining</div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
 
                 {/* Tab Content */}
                 <motion.div
@@ -235,7 +349,7 @@ export default function LandingPage() {
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Your Document</h3>
                         <p className="text-sm text-gray-600 mb-4">PDF, DOCX, or TXT files supported</p>
                       </div>
-                      <FileUploadArea onSubmit={handleFileSubmit} />
+                      <FileUploadArea onSubmit={handleFileSubmit} disabled={!canAnalyze} />
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -243,7 +357,7 @@ export default function LandingPage() {
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">Paste Your Text</h3>
                         <p className="text-sm text-gray-600 mb-4">Minimum 100 characters required</p>
                       </div>
-                      <TextAreaInput onSubmit={handleTextSubmit} />
+                      <TextAreaInput onSubmit={handleTextSubmit} disabled={!canAnalyze} />
                     </div>
                   )}
                 </motion.div>
@@ -263,6 +377,23 @@ export default function LandingPage() {
                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                       />
                       <span className="text-blue-800 font-medium">Processing your document...</span>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Cooldown Timer Display */}
+                {!canAnalyze && !isProcessing && (
+                  <motion.div 
+                    className="mt-6 p-4 bg-yellow-50 rounded-xl border border-yellow-200"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="flex items-center justify-center space-x-3">
+                      <Clock className="w-5 h-5 text-yellow-600" />
+                      <span className="text-yellow-800 font-medium">
+                        Next analysis available in {formatTimeRemaining(timeRemaining)}
+                      </span>
                     </div>
                   </motion.div>
                 )}

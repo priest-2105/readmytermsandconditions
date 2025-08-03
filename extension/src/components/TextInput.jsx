@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Send, FileText } from 'lucide-react'
 
-const TextInput = ({ onSubmit, isAnalyzing }) => {
+const TextInput = ({ onSubmit, isAnalyzing, disabled = false }) => {
   const [text, setText] = useState('')
 
   const handleSubmit = (e) => {
@@ -31,14 +31,14 @@ const TextInput = ({ onSubmit, isAnalyzing }) => {
           <span className="text-xs text-gray-500">
             {text.length} characters
           </span>
-          <button
-            type="submit"
-            disabled={!text.trim() || isAnalyzing}
-            className="flex items-center space-x-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Send className="w-3 h-3" />
-            <span>Analyze</span>
-          </button>
+                  <button
+          type="submit"
+          disabled={!text.trim() || isAnalyzing || disabled}
+          className="flex items-center space-x-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Send className="w-3 h-3" />
+          <span>{disabled ? 'Cooldown Active' : 'Analyze'}</span>
+        </button>
         </div>
       </form>
     </div>
