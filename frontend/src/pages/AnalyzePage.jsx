@@ -19,9 +19,83 @@ const AnalyzePage = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showInputs, setShowInputs] = useState(true)
+  const [timeRemaining, setTimeRemaining] = useState(0)
+  const [canAnalyze, setCanAnalyze] = useState(true)
 
   // Get API URL from environment or use default
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
+  // Start the 30-minute analysis timer
+  const startAnalysisTimer = (analysisTime) => {
+    const timer = setInterval(() => {
+      const now = Date.now()
+      const elapsed = now - analysisTime
+      const remaining = (30 * 60 * 1000) - elapsed // 30 minutes in milliseconds
+      
+      if (remaining <= 0) {
+        // Timer expired - reset everything
+        setTimeRemaining(0)
+        setCanAnalyze(true)
+        setSummary(null)
+        setShowInputs(true)
+        clearInterval(timer)
+        
+        // Clear local storage
+        localStorage.removeItem('webAnalysisResults')
+        localStorage.removeItem('webAnalysisTimestamp')
+        localStorage.removeItem('webAnalysisTimer')
+      } else {
+        // Update remaining time
+        setTimeRemaining(remaining)
+      }
+    }, 1000) // Update every second
+    
+    // Store timer reference for cleanup
+    return timer
+  }
+
+  // Format time remaining as MM:SS
+  const formatTimeRemaining = (milliseconds) => {
+    const minutes = Math.floor(milliseconds / (1000 * 60))
+    const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000)
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  }
+
+  // Check for existing analysis in local storage
+  const checkLocalStorage = () => {
+    try {
+      const storedResults = localStorage.getItem('webAnalysisResults')
+      const storedTimestamp = localStorage.getItem('webAnalysisTimestamp')
+      
+      if (storedResults && storedTimestamp) {
+        const analysisTime = parseInt(storedTimestamp)
+        const now = Date.now()
+        const elapsed = now - analysisTime
+        const remaining = (30 * 60 * 1000) - elapsed
+        
+        if (remaining > 0) {
+          // Results are still valid
+          const results = JSON.parse(storedResults)
+          setSummary(results)
+          setShowInputs(false)
+          setCanAnalyze(false)
+          setTimeRemaining(remaining)
+          
+          // Restart the timer
+          startAnalysisTimer(analysisTime)
+          return true
+        } else {
+          // Results expired, clear storage
+          localStorage.removeItem('webAnalysisResults')
+          localStorage.removeItem('webAnalysisTimestamp')
+          localStorage.removeItem('webAnalysisTimer')
+        }
+      }
+    } catch (error) {
+      console.error('Error reading from local storage:', error)
+    }
+    return false
+  }
 
   // Animation variants
   const fadeInUp = {
@@ -44,12 +118,20 @@ const AnalyzePage = () => {
     transition: { duration: 0.5, ease: "easeOut" }
   }
 
-  // Check for results from URL parameters first, then Chrome storage
+  // Check for results from local storage first, then URL parameters, then Chrome storage
   useEffect(() => {
     const checkForResults = async () => {
       console.log('=== FRONTEND: Checking for analysis results ===')
       
-      // First priority: Check for results in URL parameters
+      // First priority: Check local storage for existing analysis
+      console.log('🔍 Checking local storage for existing analysis...')
+      const hasLocalResults = checkLocalStorage()
+      if (hasLocalResults) {
+        console.log('✅ Found valid analysis in local storage')
+        return
+      }
+      
+      // Second priority: Check for results in URL parameters
       const urlParams = new URLSearchParams(window.location.search)
       const resultsParam = urlParams.get('results')
       
@@ -151,11 +233,30 @@ const AnalyzePage = () => {
   }
 
   const handleFileSubmit = async (analysis) => {
+    if (!canAnalyze) {
+      setError('Please wait for the cooldown to expire before starting a new analysis')
+      return
+    }
+
+    const analysisTime = Date.now()
+    
+    // Store results in local storage
+    localStorage.setItem('webAnalysisResults', JSON.stringify(analysis))
+    localStorage.setItem('webAnalysisTimestamp', analysisTime.toString())
+    
+    // Set state and start timer
     setSummaryWithLogging(analysis)
+    setCanAnalyze(false)
     setShowInputs(false)
+    startAnalysisTimer(analysisTime)
   }
 
   const processText = async (inputText) => {
+    if (!canAnalyze) {
+      setError('Please wait for the cooldown to expire before starting a new analysis')
+      return
+    }
+
     setLoading(true)
     setError('')
     setSummary(null)
@@ -175,7 +276,18 @@ const AnalyzePage = () => {
       }
 
       const data = await response.json()
+      const analysisTime = Date.now()
+      
+      // Store results in local storage
+      localStorage.setItem('webAnalysisResults', JSON.stringify(data))
+      localStorage.setItem('webAnalysisTimestamp', analysisTime.toString())
+      
+      // Set state and start timer
       setSummaryWithLogging(data)
+      setCanAnalyze(false)
+      setShowInputs(false)
+      startAnalysisTimer(analysisTime)
+      
     } catch (err) {
       setError(err.message || 'An error occurred while analyzing the text')
     } finally {
@@ -188,6 +300,13 @@ const AnalyzePage = () => {
     setLoading(false)
     setError('')
     setShowInputs(true)
+    setCanAnalyze(true)
+    setTimeRemaining(0)
+    
+    // Clear local storage
+    localStorage.removeItem('webAnalysisResults')
+    localStorage.removeItem('webAnalysisTimestamp')
+    localStorage.removeItem('webAnalysisTimer')
   }
 
   return (
@@ -305,6 +424,30 @@ const AnalyzePage = () => {
           </motion.div>
         ) : (
           <>
+            {/* Cooldown Warning */}
+            {!canAnalyze && timeRemaining > 0 && (
+              <motion.div 
+                className="mb-8 p-6 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg shadow-sm"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 50 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-yellow-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-yellow-800 font-medium">Analysis cooldown active</p>
+                  </div>
+                  <div className="text-yellow-800 font-bold text-lg">
+                    {formatTimeRemaining(timeRemaining)}
+                  </div>
+                </div>
+                <p className="text-yellow-700 mt-2">Please wait before starting a new analysis.</p>
+              </motion.div>
+            )}
+
             {/* Input Sections - Only show when showInputs is true */}
             {showInputs && (
               <motion.div 
@@ -334,7 +477,7 @@ const AnalyzePage = () => {
                       <p className="text-gray-600">Drag & drop or click to browse</p>
                     </div>
                   </div>
-                  <FileUploadArea onSubmit={handleFileSubmit} />
+                  <FileUploadArea onSubmit={handleFileSubmit} disabled={!canAnalyze} />
                 </motion.div>
 
                 <motion.div 
@@ -358,7 +501,7 @@ const AnalyzePage = () => {
                       <p className="text-gray-600">Direct text input for quick analysis</p>
                     </div>
                   </div>
-                  <TextAreaInput onSubmit={handleTextSubmit} />
+                  <TextAreaInput onSubmit={handleTextSubmit} disabled={!canAnalyze} />
                 </motion.div>
               </motion.div>
             )}
@@ -400,18 +543,50 @@ const AnalyzePage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
               >
-                <div className="mb-8 text-center">
-                  <motion.button
-                    onClick={handleNewAnalysis}
-                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                {/* Timer Display for Results */}
+                {!canAnalyze && timeRemaining > 0 && (
+                  <motion.div 
+                    className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg shadow-sm"
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 50 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    New Analysis
-                  </motion.button>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-yellow-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="text-yellow-800 font-medium">Next analysis available in:</p>
+                      </div>
+                      <div className="text-yellow-800 font-bold text-lg">
+                        {formatTimeRemaining(timeRemaining)}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                <div className="mb-8 text-center">
+                  {canAnalyze ? (
+                    <motion.button
+                      onClick={handleNewAnalysis}
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      New Analysis
+                    </motion.button>
+                  ) : (
+                    <div className="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-400 font-semibold rounded-xl">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      New Analysis (30 min cooldown)
+                    </div>
+                  )}
                 </div>
                 <SummaryDisplay summary={summary} />
               </motion.div>

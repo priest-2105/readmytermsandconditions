@@ -4,8 +4,8 @@ const TextAreaInput = ({ onSubmit }) => {
   const [text, setText] = useState('')
   const [error, setError] = useState('')
   
-  const MAX_CHARACTERS = 9000
-  const MIN_CHARACTERS = 100
+  const MAX_CHARACTERS = 15000
+  const MIN_CHARACTERS = 900
   const remainingChars = MAX_CHARACTERS - text.length
   const isNearLimit = remainingChars < 100
   const isOverLimit = remainingChars < 0

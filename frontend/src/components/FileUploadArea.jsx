@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 
-const FileUploadArea = ({ onSubmit }) => {
+const FileUploadArea = ({ onSubmit, disabled = false }) => {
   const [isDragOver, setIsDragOver] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState('')
@@ -104,7 +104,7 @@ const FileUploadArea = ({ onSubmit }) => {
           isDragOver
             ? 'border-blue-400 bg-blue-50/50 scale-105 shadow-lg'
             : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50/30 hover:scale-[1.02]'
-        } ${isProcessing ? 'pointer-events-none opacity-75' : 'cursor-pointer'}`}
+        } ${isProcessing || disabled ? 'pointer-events-none opacity-75' : 'cursor-pointer'}`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -131,10 +131,10 @@ const FileUploadArea = ({ onSubmit }) => {
           
           <div className="space-y-3">
             <p className="text-xl font-semibold text-gray-900">
-              {isProcessing ? 'Processing your file...' : isDragOver ? 'Drop your file here' : 'Drop your file here'}
+              {isProcessing ? 'Processing your file...' : disabled ? 'Cooldown Active' : isDragOver ? 'Drop your file here' : 'Drop your file here'}
             </p>
             <p className="text-gray-500">
-              {isProcessing ? 'Please wait while we extract and analyze the content' : 'or click to browse files'}
+              {isProcessing ? 'Please wait while we extract and analyze the content' : disabled ? 'Please wait before uploading new files' : 'or click to browse files'}
             </p>
           </div>
 
