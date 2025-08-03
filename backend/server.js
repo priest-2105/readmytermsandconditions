@@ -63,104 +63,168 @@ const extractTextFromFile = async (file) => {
   }
 };
 
-// OpenRouter API integration
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+// Gemini API integration
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
-const analyzeTextWithOpenRouter = async (text) => {
-  const apiKey = process.env.OPENROUTER_API_KEY;
+const analyzeTextWithGemini = async (text) => {
+  const apiKey = process.env.GEMINI_API_KEY;
   
   if (!apiKey) {
-    throw new Error('OpenRouter API key is required');
+    throw new Error('Gemini API key is required');
   }
 
-  const prompt = `Please analyze the following terms and conditions text and categorize the information into these 6 sections:
+  const prompt = `Analyze the following terms and conditions text and return ONLY a valid JSON object with exactly these 6 keys, each containing an array of strings:
 
-1. ThingsToKnow - Key information the user should be aware of
-2. ImportantPoints - Critical points that require attention
-3. Risks - Potential risks or concerns for the user
-4. UserObligations - What the user is required to do or not do
-5. UserRights - What rights and protections the user has
-6. OptionalNotes - Additional notes or clarifications
-
-Please return the analysis as a JSON object with these exact keys, each containing an array of strings (bullet points).
+{
+  "ThingsToKnow": ["Key information the user should be aware of"],
+  "ImportantPoints": ["Critical points that require attention"],
+  "Risks": ["Potential risks or concerns for the user"],
+  "UserObligations": ["What the user is required to do or not do"],
+  "UserRights": ["What rights and protections the user has"],
+  "OptionalNotes": ["Additional notes or clarifications"]
+}
 
 Text to analyze:
 ${text}
 
-Respond only with valid JSON in this exact format:
-{
-  "ThingsToKnow": ["point1", "point2"],
-  "ImportantPoints": ["point1", "point2"],
-  "Risks": ["point1", "point2"],
-  "UserObligations": ["point1", "point2"],
-  "UserRights": ["point1", "point2"],
-  "OptionalNotes": ["point1", "point2"]
-}`;
+IMPORTANT: Return ONLY the JSON object, no additional text, no markdown formatting, no explanations. The response must be valid JSON that can be parsed directly.`;
+
+  console.log('=== GEMINI API REQUEST ===');
+  console.log('URL:', GEMINI_API_URL);
+  console.log('API Key present:', !!apiKey);
+  console.log('Text length:', text.length);
+  console.log('Prompt:', prompt);
 
   try {
-    const response = await fetch(OPENROUTER_API_URL, {
+    const requestBody = {
+      contents: [
+        {
+          parts: [
+            {
+              text: prompt
+            }
+          ]
+        }
+      ]
+    };
+
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
+
+    const response = await fetch(GEMINI_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': 'http://localhost:5173',
-        'X-Title': 'Terms & Conditions Analyzer'
+        'X-goog-api-key': apiKey
       },
-      body: JSON.stringify({
-        model: 'anthropic/claude-3.5-sonnet',
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 2000,
-        temperature: 0.3
-      })
+      body: JSON.stringify(requestBody)
     });
+
+    console.log('=== GEMINI API RESPONSE ===');
+    console.log('Status:', response.status);
+    console.log('Status Text:', response.statusText);
+    console.log('Headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.log('Error response:', JSON.stringify(errorData, null, 2));
       
       // Check for specific error conditions and provide cleaner messages
-      if (response.status === 402) {
-        throw new Error('Credit limit reached. Please try again later or contact support.');
+      if (response.status === 400) {
+        throw new Error('Invalid request to Gemini API. Please check your API configuration.');
       } else if (response.status === 429) {
         throw new Error('Rate limit exceeded. Please try again in a few minutes.');
       } else if (response.status === 401) {
-        throw new Error('Authentication failed. Please check your API configuration.');
+        throw new Error('Authentication failed. Please check your Gemini API key.');
       } else {
         throw new Error(`Analysis failed: ${errorData.error?.message || 'Unknown error occurred'}`);
       }
     }
 
     const data = await response.json();
+    console.log('=== RAW GEMINI RESPONSE ===');
+    console.log(JSON.stringify(data, null, 2));
     
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid response format from API');
+    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0]) {
+      console.error('Invalid response structure:', data);
+      throw new Error('Invalid response format from Gemini API');
     }
 
-    const content = data.choices[0].message.content;
+    const content = data.candidates[0].content.parts[0].text;
+    console.log('=== EXTRACTED CONTENT ===');
+    console.log('Content type:', typeof content);
+    console.log('Content length:', content.length);
+    console.log('Raw content:');
+    console.log('---START---');
+    console.log(content);
+    console.log('---END---');
     
     // Try to parse the JSON response
     try {
-      const parsedResponse = JSON.parse(content);
+      // Clean the content - remove any markdown formatting
+      let cleanedContent = content.trim();
+      
+      // Remove markdown code blocks if present
+      if (cleanedContent.startsWith('```json')) {
+        cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        console.log('Removed ```json wrapper');
+      } else if (cleanedContent.startsWith('```')) {
+        cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+        console.log('Removed ``` wrapper');
+      }
+      
+      console.log('=== CLEANED CONTENT ===');
+      console.log('Cleaned content:');
+      console.log('---START---');
+      console.log(cleanedContent);
+      console.log('---END---');
+      
+      const parsedResponse = JSON.parse(cleanedContent);
+      console.log('=== PARSED JSON ===');
+      console.log(JSON.stringify(parsedResponse, null, 2));
       
       // Validate the response structure
       const requiredKeys = ['ThingsToKnow', 'ImportantPoints', 'Risks', 'UserObligations', 'UserRights', 'OptionalNotes'];
       const hasAllKeys = requiredKeys.every(key => Array.isArray(parsedResponse[key]));
       
       if (!hasAllKeys) {
-        throw new Error('Invalid response structure from AI');
+        console.error('Missing required keys in response:', Object.keys(parsedResponse));
+        throw new Error('Invalid response structure from AI - missing required keys');
       }
       
+      console.log('=== SUCCESS - RETURNING PARSED RESPONSE ===');
       return parsedResponse;
     } catch (parseError) {
-      console.error('Failed to parse AI response:', content);
-      throw new Error('AI response could not be parsed. Please try again.');
+      console.error('=== PARSE ERROR ===');
+      console.error('Parse error:', parseError.message);
+      console.error('Failed to parse Gemini response:', content);
+      
+      // Try to extract JSON from the response if it's wrapped in text
+      try {
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const extractedJson = jsonMatch[0];
+          console.log('=== EXTRACTED JSON ATTEMPT ===');
+          console.log('Attempting to parse extracted JSON:', extractedJson);
+          const parsedResponse = JSON.parse(extractedJson);
+          
+          // Validate the response structure
+          const requiredKeys = ['ThingsToKnow', 'ImportantPoints', 'Risks', 'UserObligations', 'UserRights', 'OptionalNotes'];
+          const hasAllKeys = requiredKeys.every(key => Array.isArray(parsedResponse[key]));
+          
+          if (hasAllKeys) {
+            console.log('=== SUCCESS - EXTRACTED JSON WORKED ===');
+            return parsedResponse;
+          }
+        }
+      } catch (extractError) {
+        console.error('Failed to extract JSON:', extractError.message);
+      }
+      
+      throw new Error(`AI response could not be parsed. Raw response: ${content.substring(0, 200)}...`);
     }
   } catch (error) {
-    console.error('OpenRouter API error:', error);
+    console.error('=== GEMINI API ERROR ===');
+    console.error('Gemini API error:', error);
     throw new Error(`Analysis failed: ${error.message}`);
   }
 };
@@ -227,10 +291,10 @@ app.post('/api/analyze', async (req, res) => {
     }
 
     let analysis;
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     
     if (apiKey) {
-      analysis = await analyzeTextWithOpenRouter(text);
+      analysis = await analyzeTextWithGemini(text);
     } else {
       console.log('No API key found, using mock analysis');
       analysis = await mockAnalyzeText(text);
@@ -259,10 +323,10 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 
     // Analyze the extracted text
     let analysis;
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     
     if (apiKey) {
-      analysis = await analyzeTextWithOpenRouter(text);
+      analysis = await analyzeTextWithGemini(text);
     } else {
       console.log('No API key found, using mock analysis');
       analysis = await mockAnalyzeText(text);

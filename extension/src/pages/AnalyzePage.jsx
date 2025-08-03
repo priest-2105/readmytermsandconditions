@@ -14,7 +14,7 @@ const AnalyzePage = () => {
   const [showInputs, setShowInputs] = useState(true)
 
   // Get API URL from environment or use default
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://readmytermsandconditions.onrender.com'
 
   // Animation variants
   const fadeInUp = {
