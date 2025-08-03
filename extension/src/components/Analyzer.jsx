@@ -316,7 +316,7 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
               chrome.tabs.create({ url })
               window.close()
             }}
-            className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center space-x-2"
+            className="w-full px-4 cursor-pointer py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center space-x-2"
           >
             <Sparkles className="w-4 h-4" />
             <span>View Full Results</span>
@@ -335,14 +335,14 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
           {canAnalyze ? (
             <button
               onClick={handleNewAnalysis}
-              className="w-full px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+              className="w-full px-4 py-2 cursor-pointer bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
             >
               New Analysis
             </button>
           ) : (
             <button
               disabled
-              className="w-full px-4 py-2 bg-gray-100 text-gray-400 text-sm font-medium rounded-lg cursor-not-allowed"
+              className="w-full px-4 py-2 cursor-pointer bg-gray-100 text-gray-400 text-sm font-medium rounded-lg cursor-not-allowed"
             >
               New Analysis (30 min cooldown)
             </button>
