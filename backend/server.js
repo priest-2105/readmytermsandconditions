@@ -229,50 +229,7 @@ IMPORTANT: Return ONLY the JSON object, no additional text, no markdown formatti
   }
 };
 
-// Mock analysis for development
-const mockAnalyzeText = async (text) => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  return {
-    ThingsToKnow: [
-      "This is a terms and conditions document",
-      "You are agreeing to the company's policies",
-      "Your data may be collected and processed",
-      "The service is provided 'as is'"
-    ],
-    ImportantPoints: [
-      "You must be 18 or older to use this service",
-      "You are responsible for maintaining account security",
-      "The company reserves the right to modify terms",
-      "You can terminate your account at any time"
-    ],
-    Risks: [
-      "Your personal information may be shared with third parties",
-      "The service may be unavailable at times",
-      "You may lose access to your account if terms are violated",
-      "Data breaches are possible despite security measures"
-    ],
-    UserObligations: [
-      "You must provide accurate information",
-      "You must not share your account credentials",
-      "You must comply with all applicable laws",
-      "You must not use the service for illegal purposes"
-    ],
-    UserRights: [
-      "You have the right to access your personal data",
-      "You can request deletion of your account",
-      "You have the right to file complaints",
-      "You can opt out of marketing communications"
-    ],
-    OptionalNotes: [
-      "This analysis is for informational purposes only",
-      "Always read the full terms before agreeing",
-      "Consider consulting with a legal professional",
-      "Keep a copy of the terms for your records"
-    ]
-  };
-};
+
 
 // Routes
 
@@ -290,15 +247,7 @@ app.post('/api/analyze', async (req, res) => {
       return res.status(400).json({ error: 'Text is required' });
     }
 
-    let analysis;
-    const apiKey = process.env.GEMINI_API_KEY;
-    
-    if (apiKey) {
-      analysis = await analyzeTextWithGemini(text);
-    } else {
-      console.log('No API key found, using mock analysis');
-      analysis = await mockAnalyzeText(text);
-    }
+    const analysis = await analyzeTextWithGemini(text);
     
     res.json(analysis);
   } catch (error) {
@@ -322,15 +271,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     }
 
     // Analyze the extracted text
-    let analysis;
-    const apiKey = process.env.GEMINI_API_KEY;
-    
-    if (apiKey) {
-      analysis = await analyzeTextWithGemini(text);
-    } else {
-      console.log('No API key found, using mock analysis');
-      analysis = await mockAnalyzeText(text);
-    }
+    const analysis = await analyzeTextWithGemini(text);
     
     res.json(analysis);
   } catch (error) {

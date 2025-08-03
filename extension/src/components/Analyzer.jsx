@@ -35,12 +35,14 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
 
       const data = await response.json()
       
-      // Redirect to frontend with results
-      const analysisData = encodeURIComponent(JSON.stringify(data))
-      const redirectUrl = `${FRONTEND_URL}/analyze?results=${analysisData}`
+      // Store results in Chrome storage
+      await chrome.storage.local.set({ 
+        analysisResults: data,
+        analysisTimestamp: Date.now()
+      })
       
-      // Open the frontend in a new tab
-      chrome.tabs.create({ url: redirectUrl })
+      // Redirect to frontend (without URL parameters)
+      chrome.tabs.create({ url: `${FRONTEND_URL}/analyze` })
       
       // Close the popup
       window.close()
@@ -88,9 +90,7 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
             </div>
             <button
               onClick={() => {
-                const analysisData = encodeURIComponent(JSON.stringify(results))
-                const redirectUrl = `${FRONTEND_URL}/analyze?results=${analysisData}`
-                chrome.tabs.create({ url: redirectUrl })
+                chrome.tabs.create({ url: `${FRONTEND_URL}/analyze` })
                 window.close()
               }}
               className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"

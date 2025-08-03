@@ -37,36 +37,67 @@ const AnalyzePage = () => {
     transition: { duration: 0.5, ease: "easeOut" }
   }
 
-  // Handle data passed from landing page or URL parameters
+  // Check for results from Chrome storage or URL parameters
   useEffect(() => {
-    // Check for results in URL parameters (from extension)
-    const urlParams = new URLSearchParams(window.location.search)
-    const resultsParam = urlParams.get('results')
-    
-    if (resultsParam) {
-      try {
-        const decodedResults = JSON.parse(decodeURIComponent(resultsParam))
-        setSummary(decodedResults)
-        setShowInputs(false)
-        return
-      } catch (error) {
-        console.error('Failed to parse results from URL:', error)
-        setError('Invalid results data received')
+    const checkForResults = async () => {
+      // First, check if we're in a Chrome extension context
+      if (typeof chrome !== 'undefined' && chrome.storage) {
+        try {
+          const result = await chrome.storage.local.get(['analysisResults', 'analysisTimestamp'])
+          
+          if (result.analysisResults) {
+            // Check if results are recent (within last 5 minutes)
+            const isRecent = result.analysisTimestamp && 
+              (Date.now() - result.analysisTimestamp) < 5 * 60 * 1000
+            
+            if (isRecent) {
+              setSummary(result.analysisResults)
+              setShowInputs(false)
+              
+              // Clear the storage after reading
+              await chrome.storage.local.remove(['analysisResults', 'analysisTimestamp'])
+              return
+            } else {
+              // Clear old results
+              await chrome.storage.local.remove(['analysisResults', 'analysisTimestamp'])
+            }
+          }
+        } catch (error) {
+          console.error('Error reading from Chrome storage:', error)
+        }
+      }
+
+      // Fallback: Check for results in URL parameters (for backward compatibility)
+      const urlParams = new URLSearchParams(window.location.search)
+      const resultsParam = urlParams.get('results')
+      
+      if (resultsParam) {
+        try {
+          const decodedResults = JSON.parse(decodeURIComponent(resultsParam))
+          setSummary(decodedResults)
+          setShowInputs(false)
+          return
+        } catch (error) {
+          console.error('Failed to parse results from URL:', error)
+          setError('Invalid results data received')
+        }
+      }
+
+      // Handle data passed from landing page
+      if (location.state?.fromLanding) {
+        if (location.state.summary) {
+          // If we have results from file upload, display them
+          setSummary(location.state.summary)
+          setShowInputs(false)
+        } else if (location.state.textToAnalyze) {
+          // If we have text to analyze, process it automatically
+          setShowInputs(false)
+          processText(location.state.textToAnalyze)
+        }
       }
     }
 
-    // Handle data passed from landing page
-    if (location.state?.fromLanding) {
-      if (location.state.summary) {
-        // If we have results from file upload, display them
-        setSummary(location.state.summary)
-        setShowInputs(false)
-      } else if (location.state.textToAnalyze) {
-        // If we have text to analyze, process it automatically
-        setShowInputs(false)
-        processText(location.state.textToAnalyze)
-      }
-    }
+    checkForResults()
   }, [location.state])
 
   const handleTextSubmit = async (inputText) => {
