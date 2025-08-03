@@ -16,7 +16,7 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
     setResults(null)
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const API_URL = import.meta.env.VITE_API_URL || 'https://readmytermsandconditions.onrender.com'
       const response = await fetch(`${API_URL}/api/analyze`, {
         method: 'POST',
         headers: {
@@ -44,6 +44,13 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
     setError('')
   }
 
+  // Handle page detection - auto-switch to page tab if legal content detected
+  const handlePageDetection = (hasLegalContent) => {
+    if (hasLegalContent) {
+      setActiveTab('page')
+    }
+  }
+
   const tabs = [
     { id: 'text', label: 'Text', icon: FileText },
     { id: 'file', label: 'File', icon: Upload },
@@ -52,8 +59,8 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
 
   if (results) {
     return (
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-4">
+      <div className="p-4 h-full flex flex-col">
+        <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <h2 className="text-lg font-semibold text-gray-900">Analysis Results</h2>
           <button
             onClick={handleNewAnalysis}
@@ -62,16 +69,18 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
             New Analysis
           </button>
         </div>
-        <Results results={results} />
+        <div className="flex-1 overflow-y-auto">
+          <Results results={results} />
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="p-4">
+    <div className="p-4 h-full flex flex-col">
       {/* Error Display */}
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex-shrink-0">
           <div className="flex items-center space-x-2">
             <AlertCircle className="w-4 h-4 text-red-500" />
             <span className="text-sm text-red-700">{error}</span>
@@ -80,7 +89,7 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
       )}
 
       {/* Tab Navigation */}
-      <div className="flex space-x-1 mb-4 bg-gray-100 rounded-lg p-1">
+      <div className="flex space-x-1 mb-4 bg-gray-100 rounded-lg p-1 flex-shrink-0">
         {tabs.map((tab) => {
           const Icon = tab.icon
           return (
@@ -100,8 +109,8 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
         })}
       </div>
 
-      {/* Tab Content */}
-      <div className="space-y-4">
+      {/* Tab Content - Scrollable */}
+      <div className="flex-1 overflow-y-auto space-y-4">
         {activeTab === 'text' && (
           <TextInput onSubmit={handleAnalysis} isAnalyzing={isAnalyzing} />
         )}
@@ -109,13 +118,17 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
           <FileUpload onSubmit={handleAnalysis} isAnalyzing={isAnalyzing} />
         )}
         {activeTab === 'page' && (
-          <PageAnalyzer onSubmit={handleAnalysis} isAnalyzing={isAnalyzing} />
+          <PageAnalyzer 
+            onSubmit={handleAnalysis} 
+            isAnalyzing={isAnalyzing}
+            onDetection={handlePageDetection}
+          />
         )}
       </div>
 
       {/* Loading State */}
       {isAnalyzing && (
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 flex-shrink-0">
           <div className="flex items-center justify-center space-x-3">
             <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
             <span className="text-sm text-blue-800 font-medium">Analyzing...</span>
