@@ -10,6 +10,9 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
   const [results, setResults] = useState(null)
   const [error, setError] = useState('')
 
+  // Get the frontend URL from environment or use default
+  const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || 'https://readmytermsandconditions-frontend.vercel.app'
+
   const handleAnalysis = async (text) => {
     setIsAnalyzing(true)
     setError('')
@@ -31,10 +34,19 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
       }
 
       const data = await response.json()
-      setResults(data)
+      
+      // Redirect to frontend with results
+      const analysisData = encodeURIComponent(JSON.stringify(data))
+      const redirectUrl = `${FRONTEND_URL}/analyze?results=${analysisData}`
+      
+      // Open the frontend in a new tab
+      chrome.tabs.create({ url: redirectUrl })
+      
+      // Close the popup
+      window.close()
+      
     } catch (err) {
       setError(err.message || 'An error occurred while analyzing the text')
-    } finally {
       setIsAnalyzing(false)
     }
   }
@@ -57,20 +69,35 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
     { id: 'page', label: 'Page', icon: Globe },
   ]
 
+  // If we have results, show them briefly before redirecting
   if (results) {
     return (
       <div className="p-4 h-full flex flex-col">
         <div className="flex items-center justify-between mb-4 flex-shrink-0">
-          <h2 className="text-lg font-semibold text-gray-900">Analysis Results</h2>
-          <button
-            onClick={handleNewAnalysis}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-          >
-            New Analysis
-          </button>
+          <h2 className="text-lg font-semibold text-gray-900">Analysis Complete!</h2>
+          <CheckCircle className="w-5 h-5 text-green-500" />
         </div>
         <div className="flex-1 overflow-y-auto">
-          <Results results={results} />
+          <div className="text-center py-8">
+            <div className="mb-4">
+              <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Redirecting to Full Results</h3>
+              <p className="text-sm text-gray-600">
+                Opening detailed analysis in a new tab...
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                const analysisData = encodeURIComponent(JSON.stringify(results))
+                const redirectUrl = `${FRONTEND_URL}/analyze?results=${analysisData}`
+                chrome.tabs.create({ url: redirectUrl })
+                window.close()
+              }}
+              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+            >
+              Open Results
+            </button>
+          </div>
         </div>
       </div>
     )

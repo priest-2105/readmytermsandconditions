@@ -37,8 +37,25 @@ const AnalyzePage = () => {
     transition: { duration: 0.5, ease: "easeOut" }
   }
 
-  // Handle data passed from landing page
+  // Handle data passed from landing page or URL parameters
   useEffect(() => {
+    // Check for results in URL parameters (from extension)
+    const urlParams = new URLSearchParams(window.location.search)
+    const resultsParam = urlParams.get('results')
+    
+    if (resultsParam) {
+      try {
+        const decodedResults = JSON.parse(decodeURIComponent(resultsParam))
+        setSummary(decodedResults)
+        setShowInputs(false)
+        return
+      } catch (error) {
+        console.error('Failed to parse results from URL:', error)
+        setError('Invalid results data received')
+      }
+    }
+
+    // Handle data passed from landing page
     if (location.state?.fromLanding) {
       if (location.state.summary) {
         // If we have results from file upload, display them
