@@ -121,7 +121,17 @@ Respond only with valid JSON in this exact format:
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorData.error?.message || 'Unknown error'}`);
+      
+      // Check for specific error conditions and provide cleaner messages
+      if (response.status === 402) {
+        throw new Error('Credit limit reached. Please try again later or contact support.');
+      } else if (response.status === 429) {
+        throw new Error('Rate limit exceeded. Please try again in a few minutes.');
+      } else if (response.status === 401) {
+        throw new Error('Authentication failed. Please check your API configuration.');
+      } else {
+        throw new Error(`Analysis failed: ${errorData.error?.message || 'Unknown error occurred'}`);
+      }
     }
 
     const data = await response.json();
