@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import FileUploadArea from '../components/FileUploadArea'
@@ -50,9 +50,9 @@ const AnalyzePage = () => {
         processText(location.state.textToAnalyze)
       }
     }
-  }, [location.state])
+  }, [location.state, processText])
 
-  const handleTextSubmit = async (inputText) => {
+  const handleTextSubmit = useCallback(async (inputText) => {
     if (!inputText.trim()) {
       setError('Please enter some text to analyze')
       return
@@ -60,14 +60,14 @@ const AnalyzePage = () => {
     
     setShowInputs(false)
     await processText(inputText)
-  }
+  }, [processText])
 
   const handleFileSubmit = async (analysis) => {
     setSummary(analysis)
     setShowInputs(false)
   }
 
-  const processText = async (inputText) => {
+  const processText = useCallback(async (inputText) => {
     setLoading(true)
     setError('')
     setSummary(null)
@@ -93,7 +93,7 @@ const AnalyzePage = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [API_URL])
 
   const handleNewAnalysis = () => {
     setSummary(null)
@@ -188,13 +188,26 @@ const AnalyzePage = () => {
           </motion.div>
         )}
 
-        {/* Show results if we have them from landing page */}
-        {summary && location.state?.fromLanding ? (
+        {/* Show results if we have them */}
+        {summary ? (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
+            <div className="mb-8 text-center">
+              <motion.button
+                onClick={handleNewAnalysis}
+                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                New Analysis
+              </motion.button>
+            </div>
             <SummaryDisplay summary={summary} />
           </motion.div>
         ) : (
@@ -287,29 +300,7 @@ const AnalyzePage = () => {
               </motion.div>
             )}
 
-            {/* Results */}
-            {summary && (
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-              >
-                <div className="mb-8 text-center">
-                  <motion.button
-                    onClick={handleNewAnalysis}
-                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    New Analysis
-                  </motion.button>
-                </div>
-                <SummaryDisplay summary={summary} />
-              </motion.div>
-            )}
+
           </>
         )}
       </div>
