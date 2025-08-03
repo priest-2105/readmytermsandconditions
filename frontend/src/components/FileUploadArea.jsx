@@ -52,6 +52,11 @@ const FileUploadArea = ({ onSubmit, disabled = false }) => {
   }
 
   const handleFile = async (file) => {
+    if (disabled) {
+      setError('Please wait for the cooldown to expire before uploading new files')
+      return
+    }
+
     setError('')
     setIsProcessing(true)
 
@@ -70,6 +75,11 @@ const FileUploadArea = ({ onSubmit, disabled = false }) => {
     e.preventDefault()
     setIsDragOver(false)
 
+    if (disabled) {
+      setError('Please wait for the cooldown to expire before uploading new files')
+      return
+    }
+
     const files = Array.from(e.dataTransfer.files)
     if (files.length > 0) {
       handleFile(files[0])
@@ -87,6 +97,11 @@ const FileUploadArea = ({ onSubmit, disabled = false }) => {
   }
 
   const handleFileInput = (e) => {
+    if (disabled) {
+      setError('Please wait for the cooldown to expire before uploading new files')
+      return
+    }
+
     const file = e.target.files[0]
     if (file) {
       handleFile(file)
@@ -94,6 +109,10 @@ const FileUploadArea = ({ onSubmit, disabled = false }) => {
   }
 
   const handleClick = () => {
+    if (disabled) {
+      setError('Please wait for the cooldown to expire before uploading new files')
+      return
+    }
     fileInputRef.current?.click()
   }
 
