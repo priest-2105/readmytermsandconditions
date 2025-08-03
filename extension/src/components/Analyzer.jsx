@@ -28,19 +28,19 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
         data = input
       } else {
         // Otherwise, analyze the text
-        const API_URL = import.meta.env.VITE_API_URL || 'https://readmytermsandconditions.onrender.com'
-        const response = await fetch(`${API_URL}/api/analyze`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+      const API_URL = import.meta.env.VITE_API_URL || 'https://readmytermsandconditions.onrender.com'
+      const response = await fetch(`${API_URL}/api/analyze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
           body: JSON.stringify({ text: input }),
-        })
+      })
 
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to analyze text')
-        }
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to analyze text')
+      }
 
         data = await response.json()
       }
@@ -50,7 +50,7 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
       const analysisTime = Date.now()
       await chrome.storage.local.set({ 
         [sessionKey]: {
-          analysisResults: data,
+        analysisResults: data,
           analysisTimestamp: analysisTime,
           sessionId: sessionKey
         }
@@ -213,7 +213,7 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
       <div className="p-4 h-full flex flex-col">
         <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Analysis Complete!</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Analysis Complete!</h2>
             <p className="text-xs text-gray-500">
               Found {Object.values(results).reduce((total, arr) => total + (Array.isArray(arr) ? arr.length : 0), 0)} key points
             </p>
