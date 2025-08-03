@@ -40,6 +40,32 @@ const FileUpload = ({ onSubmit, isAnalyzing }) => {
   const handleSubmit = async () => {
     if (!file || isAnalyzing) return
 
+    if (file.type === 'application/pdf') {
+      // For PDF files, upload directly to API
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || 'https://readmytermsandconditions.onrender.com'
+        const response = await fetch(`${API_URL}/api/upload`, {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to analyze PDF')
+        }
+
+        const data = await response.json()
+        onSubmit(data) // Pass the results directly
+      } catch (error) {
+        alert(`Error analyzing PDF: ${error.message}`)
+      }
+      return
+    }
+
+    // For text files, read and analyze
     const reader = new FileReader()
     reader.onload = (e) => {
       const text = e.target.result

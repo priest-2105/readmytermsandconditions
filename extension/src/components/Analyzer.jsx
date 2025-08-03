@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Upload, FileText, Globe, Sparkles, AlertCircle, CheckCircle } from 'lucide-react'
 import TextInput from './TextInput'
 import FileUpload from './FileUpload'
@@ -13,27 +13,35 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
   // Get the frontend URL from environment or use default
   const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || 'https://readmytermsandconditions-frontend.vercel.app'
 
-  const handleAnalysis = async (text) => {
+  const handleAnalysis = async (input) => {
     setIsAnalyzing(true)
     setError('')
     setResults(null)
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'https://readmytermsandconditions.onrender.com'
-      const response = await fetch(`${API_URL}/api/analyze`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text }),
-      })
+      let data
+      
+      // If input is already results (from file upload), use it directly
+      if (typeof input === 'object' && input.ThingsToKnow) {
+        data = input
+      } else {
+        // Otherwise, analyze the text
+        const API_URL = import.meta.env.VITE_API_URL || 'https://readmytermsandconditions.onrender.com'
+        const response = await fetch(`${API_URL}/api/analyze`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: input }),
+        })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to analyze text')
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to analyze text')
+        }
+
+        data = await response.json()
       }
-
-      const data = await response.json()
       
       // Store results in Chrome storage
       await chrome.storage.local.set({ 
@@ -51,9 +59,41 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
     }
   }
 
+  // Load previous results when component mounts
+  useEffect(() => {
+    const loadPreviousResults = async () => {
+      if (typeof chrome !== 'undefined' && chrome.storage) {
+        try {
+          const result = await chrome.storage.local.get(['analysisResults', 'analysisTimestamp'])
+          
+          if (result.analysisResults) {
+            // Check if results are recent (within last 30 minutes)
+            const isRecent = result.analysisTimestamp && 
+              (Date.now() - result.analysisTimestamp) < 30 * 60 * 1000
+            
+            if (isRecent) {
+              setResults(result.analysisResults)
+            } else {
+              // Clear old results
+              await chrome.storage.local.remove(['analysisResults', 'analysisTimestamp'])
+            }
+          }
+        } catch (error) {
+          console.error('Error loading previous results:', error)
+        }
+      }
+    }
+
+    loadPreviousResults()
+  }, [])
+
   const handleNewAnalysis = () => {
     setResults(null)
     setError('')
+    // Clear storage when starting new analysis
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      chrome.storage.local.remove(['analysisResults', 'analysisTimestamp'])
+    }
   }
 
   // Handle page detection - auto-switch to page tab if legal content detected
@@ -74,11 +114,16 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
     return (
       <div className="p-4 h-full flex flex-col">
         <div className="flex items-center justify-between mb-4 flex-shrink-0">
-          <h2 className="text-lg font-semibold text-gray-900">Analysis Complete!</h2>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Analysis Complete!</h2>
+            <p className="text-xs text-gray-500">
+              Found {Object.values(results).reduce((total, arr) => total + (Array.isArray(arr) ? arr.length : 0), 0)} key points
+            </p>
+          </div>
           <CheckCircle className="w-5 h-5 text-green-500" />
         </div>
         
-        <div className="flex-1 overflow-y-auto space-y-4">
+        <div className="flex-1 overflow-y-auto space-y-4 pb-4">
           {/* Limited Results Display */}
           <div className="space-y-3">
             {/* Things to Know */}
@@ -140,23 +185,42 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
                 </ul>
               </div>
             )}
-          </div>
 
-          {/* View Full Results Button */}
-          <div className="pt-4 border-t border-gray-200">
-            <button
-              onClick={() => {
-                chrome.tabs.create({ url: `${FRONTEND_URL}/analyze` })
-                window.close()
-              }}
-              className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center space-x-2"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>View Full Results</span>
-            </button>
+            {/* User Rights */}
+            {results.UserRights && results.UserRights.length > 0 && (
+              <div className="bg-green-50 p-3 rounded-lg">
+                <h3 className="text-sm font-semibold text-green-900 mb-2">Your Rights</h3>
+                <ul className="text-xs text-green-800 space-y-1">
+                  {results.UserRights.slice(0, 2).map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-green-600 mr-2">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                  {results.UserRights.length > 2 && (
+                    <li className="text-green-600 text-xs italic">
+                      +{results.UserRights.length - 2} more items
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
           </div>
+        </div>
 
-          {/* New Analysis Button */}
+        {/* Fixed Bottom Buttons */}
+        <div className="flex-shrink-0 space-y-2 pt-4 border-t border-gray-200">
+          <button
+            onClick={() => {
+              chrome.tabs.create({ url: `${FRONTEND_URL}/analyze` })
+              window.close()
+            }}
+            className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center space-x-2"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>View Full Results</span>
+          </button>
+
           <button
             onClick={handleNewAnalysis}
             className="w-full px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
