@@ -68,23 +68,33 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
     }
   }
 
-  // Load previous results when component mounts
+  // Load previous results when component mounts (session-specific)
   useEffect(() => {
     const loadPreviousResults = async () => {
       if (typeof chrome !== 'undefined' && chrome.storage) {
         try {
-          const result = await chrome.storage.local.get(['analysisResults', 'analysisTimestamp'])
+          // Clean up old sessions first
+          await cleanupOldSessions()
           
-          if (result.analysisResults) {
-            // Check if results are recent (within last 30 minutes)
-            const isRecent = result.analysisTimestamp && 
-              (Date.now() - result.analysisTimestamp) < 30 * 60 * 1000
+          // Get the current session key
+          const sessionResult = await chrome.storage.local.get(['currentSessionKey'])
+          
+          if (sessionResult.currentSessionKey) {
+            // Load data for the current session only
+            const result = await chrome.storage.local.get([sessionResult.currentSessionKey])
+            const sessionData = result[sessionResult.currentSessionKey]
             
-            if (isRecent) {
-              setResults(result.analysisResults)
-            } else {
-              // Clear old results
-              await chrome.storage.local.remove(['analysisResults', 'analysisTimestamp'])
+            if (sessionData && sessionData.analysisResults) {
+              // Check if results are recent (within last 30 minutes)
+              const isRecent = sessionData.analysisTimestamp && 
+                (Date.now() - sessionData.analysisTimestamp) < 30 * 60 * 1000
+              
+              if (isRecent) {
+                setResults(sessionData.analysisResults)
+              } else {
+                // Clear old session data
+                await chrome.storage.local.remove([sessionResult.currentSessionKey, 'currentSessionKey'])
+              }
             }
           }
         } catch (error) {
@@ -96,12 +106,43 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
     loadPreviousResults()
   }, [])
 
+  // Clean up old sessions
+  const cleanupOldSessions = async () => {
+    try {
+      const allData = await chrome.storage.local.get(null)
+      const now = Date.now()
+      const keysToRemove = []
+      
+      // Find old session keys (older than 1 hour)
+      Object.keys(allData).forEach(key => {
+        if (key.startsWith('analysis_') && allData[key] && allData[key].analysisTimestamp) {
+          const age = now - allData[key].analysisTimestamp
+          if (age > 60 * 60 * 1000) { // 1 hour
+            keysToRemove.push(key)
+          }
+        }
+      })
+      
+      // Remove old sessions
+      if (keysToRemove.length > 0) {
+        await chrome.storage.local.remove(keysToRemove)
+        console.log(`Cleaned up ${keysToRemove.length} old sessions`)
+      }
+    } catch (error) {
+      console.error('Error cleaning up old sessions:', error)
+    }
+  }
+
   const handleNewAnalysis = () => {
     setResults(null)
     setError('')
-    // Clear storage when starting new analysis
+    // Clear current session storage when starting new analysis
     if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.remove(['analysisResults', 'analysisTimestamp'])
+      chrome.storage.local.get(['currentSessionKey']).then((result) => {
+        if (result.currentSessionKey) {
+          chrome.storage.local.remove([result.currentSessionKey, 'currentSessionKey'])
+        }
+      })
     }
   }
 
@@ -221,9 +262,9 @@ const Analyzer = ({ isAnalyzing, setIsAnalyzing }) => {
         <div className="flex-shrink-0 space-y-2 pt-4 border-t border-gray-200">
           <button
             onClick={() => {
-              // Store results in Chrome storage AND pass via URL parameter as fallback
+              // Pass results via URL parameter (session-specific)
               const encodedResults = encodeURIComponent(JSON.stringify(results))
-              const url = `${FRONTEND_URL}/analyze?results=${encodedResults}`
+              const url = `${FRONTEND_URL}/analyze?results=${encodedResults}&session=${Date.now()}`
               chrome.tabs.create({ url })
               window.close()
             }}
