@@ -48,17 +48,17 @@ const TextAreaInput = ({ onSubmit, disabled = false }) => {
         <label htmlFor="text-input" className="block text-sm font-semibold text-gray-700">
           Enter your terms and conditions text
         </label>
-        <div className="relative">
+        <div className="relative apple-card p-2">
           <textarea
             id="text-input"
             value={text}
             onChange={handleTextChange}
             rows={10}
-            className={`w-full px-4 py-4 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 resize-none transition-all duration-200 ${
+            className={`w-full px-4 py-4 rounded-xl focus:outline-none focus:ring-4 focus:ring-[color:var(--apple-blue)] focus:border-[color:var(--apple-blue)] resize-none transition-all duration-200 ${
               isOverLimit ? 'border-red-300 bg-red-50' : 
               isNearLimit ? 'border-yellow-300 bg-yellow-50' : 
               isUnderMin ? 'border-orange-300 bg-orange-50' :
-              'border-gray-300 hover:border-gray-400'
+              'border border-gray-200 hover:border-gray-300'
             }`}
             placeholder="Paste your terms and conditions text here... We'll analyze it and break it down into easy-to-understand sections. (Minimum 100 characters required)"
             maxLength={MAX_CHARACTERS}
@@ -128,7 +128,7 @@ const TextAreaInput = ({ onSubmit, disabled = false }) => {
       <button
         type="submit"
         disabled={!text.trim() || text.length > MAX_CHARACTERS || text.trim().length < MIN_CHARACTERS || disabled}
-        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-4 focus:ring-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
+        className="w-full apple-btn primary py-4 px-6 font-semibold focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <div className="flex items-center justify-center space-x-2">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
