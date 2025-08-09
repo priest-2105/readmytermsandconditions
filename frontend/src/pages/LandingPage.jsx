@@ -157,7 +157,7 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <motion.section 
-        className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50/30"
+        className="relative overflow-hidden bg-white"
         initial="initial"
         whileInView="animate"
         viewport={{ once: true, amount: 0.3 }}
@@ -220,14 +220,14 @@ export default function LandingPage() {
 
               {/* Main Heading */}
               <motion.h1 
-                className="text-5xl lg:text-6xl font-bold tracking-tight mb-8"
+                className="text-[40px] lg:text-[56px] font-semibold tracking-tight mb-8"
                 variants={fadeInUp}
               >
-                <span className="bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
+                <span className="text-gray-900">
                   Decode Legal Jargon
                 </span>
                 <br />
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <span className="text-gray-700">
                   in Seconds
                 </span>
               </motion.h1>
@@ -268,7 +268,7 @@ export default function LandingPage() {
             {/* Right Column - Interactive Analysis Tool */}
             <motion.div className="relative" variants={slideInRight}>
               <motion.div 
-                className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100"
+                className="apple-card p-8"
                 whileHover={{ y: -10 }}
                 transition={{ duration: 0.3 }}
               >
@@ -279,7 +279,7 @@ export default function LandingPage() {
                     disabled={!canAnalyze}
                     className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
                       activeTab === 'upload'
-                        ? 'bg-white text-blue-600 shadow-sm'
+                        ? 'bg-white text-gray-900 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
                     } ${!canAnalyze ? 'opacity-50 cursor-not-allowed' : ''}`}
                     whileHover={canAnalyze ? { scale: 1.02 } : {}}
@@ -295,7 +295,7 @@ export default function LandingPage() {
                     disabled={!canAnalyze}
                     className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
                       activeTab === 'text'
-                        ? 'bg-white text-blue-600 shadow-sm'
+                        ? 'bg-white text-gray-900 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
                     } ${!canAnalyze ? 'opacity-50 cursor-not-allowed' : ''}`}
                     whileHover={canAnalyze ? { scale: 1.02 } : {}}
@@ -365,7 +365,7 @@ export default function LandingPage() {
                 {/* Processing State */}
                 {isProcessing && (
                   <motion.div 
-                    className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200"
+                    className="mt-6 p-4 apple-card"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3 }}
@@ -376,7 +376,7 @@ export default function LandingPage() {
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                       />
-                      <span className="text-blue-800 font-medium">Processing your document...</span>
+                      <span className="text-gray-800 font-medium">Processing your document...</span>
                     </div>
                   </motion.div>
                 )}
@@ -384,14 +384,14 @@ export default function LandingPage() {
                 {/* Cooldown Timer Display */}
                 {!canAnalyze && !isProcessing && (
                   <motion.div 
-                    className="mt-6 p-4 bg-yellow-50 rounded-xl border border-yellow-200"
+                    className="mt-6 p-4 apple-card"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3 }}
                   >
                     <div className="flex items-center justify-center space-x-3">
                       <Clock className="w-5 h-5 text-yellow-600" />
-                      <span className="text-yellow-800 font-medium">
+                      <span className="text-gray-800 font-medium">
                         Next analysis available in {formatTimeRemaining(timeRemaining)}
                       </span>
                     </div>
@@ -708,8 +708,8 @@ export default function LandingPage() {
             </motion.div>
 
             <motion.div className="relative" variants={slideInRight}>
-              <motion.div 
-                className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl p-8 shadow-2xl"
+            <motion.div 
+                className="apple-card p-8"
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.3 }}
               >
@@ -728,7 +728,7 @@ export default function LandingPage() {
 
       {/* Final CTA Section */}
       <motion.section 
-        className="py-24 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white relative overflow-hidden"
+        className="py-24 bg-gray-900 text-white relative overflow-hidden"
         initial="initial"
         whileInView="animate"
         viewport={{ once: true, amount: 0.3 }}

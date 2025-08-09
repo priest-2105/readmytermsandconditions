@@ -311,7 +311,7 @@ const AnalyzePage = () => {
 
   return (
     <motion.div 
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"
+      className="min-h-screen bg-white"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -345,7 +345,7 @@ const AnalyzePage = () => {
         </div>
       </motion.nav>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <motion.div 
           className="text-center mb-12"
@@ -354,7 +354,7 @@ const AnalyzePage = () => {
           variants={staggerContainer}
         >
           <motion.div 
-            className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full mb-6"
+            className="inline-flex items-center justify-center w-14 h-14 bg-gray-900 rounded-xl mb-6"
             variants={scaleIn}
             whileHover={{ rotate: 360 }}
             transition={{ duration: 0.6 }}
@@ -364,13 +364,13 @@ const AnalyzePage = () => {
             </svg>
           </motion.div>
           <motion.h1 
-            className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-4"
+            className="text-[40px] font-semibold text-gray-900 mb-2"
             variants={fadeInUp}
           >
             Terms & Conditions Analyzer
           </motion.h1>
           <motion.p 
-            className="text-xl text-gray-600"
+            className="text-[17px] text-gray-600"
             variants={fadeInUp}
           >
             Upload a document or paste text to get an AI-powered analysis
@@ -457,7 +457,7 @@ const AnalyzePage = () => {
                 variants={staggerContainer}
               >
                 <motion.div 
-                  className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8"
+                  className="apple-card p-8"
                   variants={scaleIn}
                   whileHover={{ y: -5, scale: 1.02 }}
                   transition={{ duration: 0.3 }}
@@ -481,7 +481,7 @@ const AnalyzePage = () => {
                 </motion.div>
 
                 <motion.div 
-                  className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8"
+                  className="apple-card p-8"
                   variants={scaleIn}
                   whileHover={{ y: -5, scale: 1.02 }}
                   transition={{ duration: 0.3 }}
