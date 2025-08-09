@@ -46,9 +46,9 @@ export default function LandingPage() {
     transition: { duration: 0.6, ease: "easeOut" }
   }
 
-  // Cooldown timer functions
+  
   const startAnalysisTimer = () => {
-    const cooldownDuration = 30 * 60 * 1000 // 30 minutes in milliseconds
+    const cooldownDuration = 30 * 60 * 1000 
     const endTime = Date.now() + cooldownDuration
     
     // Store the end time in localStorage
