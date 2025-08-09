@@ -229,6 +229,85 @@ IMPORTANT: Return ONLY the JSON object, no additional text, no markdown formatti
   }
 };
 
+// Utility: normalize text by collapsing excessive whitespace
+const normalizeText = (text) => {
+  if (!text) return '';
+  return text
+    .replace(/[\r\t]+/g, ' ')
+    .replace(/\u00A0/g, ' ') // non-breaking space
+    .replace(/\s{2,}/g, ' ') // collapse multiple spaces
+    .replace(/\n{2,}/g, '\n')
+    .trim();
+};
+
+// Utility: chunk long text into reasonably sized slices for the model
+const chunkText = (text, chunkSize = 6000, overlap = 200) => {
+  const chunks = [];
+  let start = 0;
+  while (start < text.length) {
+    const end = Math.min(text.length, start + chunkSize);
+    const slice = text.slice(start, end);
+    chunks.push(slice);
+    if (end === text.length) break;
+    start = end - overlap; // overlap to preserve context
+  }
+  return chunks;
+};
+
+// Utility: merge multiple analysis objects into one, de-duplicating entries
+const mergeAnalyses = (analyses) => {
+  const keys = ['ThingsToKnow', 'ImportantPoints', 'Risks', 'UserObligations', 'UserRights', 'OptionalNotes'];
+  const result = Object.fromEntries(keys.map((k) => [k, []]));
+  const seenPerKey = Object.fromEntries(keys.map((k) => [k, new Set()]));
+
+  for (const analysis of analyses) {
+    for (const key of keys) {
+      const items = Array.isArray(analysis[key]) ? analysis[key] : [];
+      for (const rawItem of items) {
+        const item = String(rawItem).trim();
+        if (item.length === 0) continue;
+        if (!seenPerKey[key].has(item)) {
+          seenPerKey[key].add(item);
+          result[key].push(item);
+        }
+      }
+    }
+  }
+
+  // Optionally cap list sizes to keep responses concise
+  const MAX_ITEMS_PER_KEY = 50;
+  for (const key of keys) {
+    if (result[key].length > MAX_ITEMS_PER_KEY) {
+      result[key] = result[key].slice(0, MAX_ITEMS_PER_KEY);
+    }
+  }
+
+  return result;
+};
+
+// Analyze possibly large text by chunking when necessary
+const analyzePossiblyLargeText = async (text) => {
+  const cleaned = normalizeText(text);
+  const CHUNK_CHAR_LIMIT = 6000; // conservative for prompt + content
+
+  if (cleaned.length <= CHUNK_CHAR_LIMIT) {
+    return analyzeTextWithGemini(cleaned);
+  }
+
+  const chunks = chunkText(cleaned, CHUNK_CHAR_LIMIT, 200);
+  const analyses = [];
+
+  // Sequential to avoid rate-limits
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    console.log(`Analyzing chunk ${i + 1}/${chunks.length}, length=${chunk.length}`);
+    const analysis = await analyzeTextWithGemini(chunk);
+    analyses.push(analysis);
+  }
+
+  return mergeAnalyses(analyses);
+};
+
 
 
 // Routes
@@ -246,8 +325,7 @@ app.post('/api/analyze', async (req, res) => {
     if (!text || !text.trim()) {
       return res.status(400).json({ error: 'Text is required' });
     }
-
-    const analysis = await analyzeTextWithGemini(text);
+    const analysis = await analyzePossiblyLargeText(text);
     
     res.json(analysis);
   } catch (error) {
@@ -271,11 +349,15 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     }
 
     // Analyze the extracted text
-    const analysis = await analyzeTextWithGemini(text);
+    const analysis = await analyzePossiblyLargeText(text);
     
     res.json(analysis);
   } catch (error) {
     console.error('Upload error:', error);
+    // Provide clearer client error for known cases
+    if (/DOC files are not supported/i.test(error.message)) {
+      return res.status(400).json({ error: 'DOC files are not supported. Please convert to DOCX or PDF.' });
+    }
     res.status(500).json({ error: error.message });
   }
 });

@@ -30,7 +30,7 @@ const AnalyzePage = () => {
     const timer = setInterval(() => {
       const now = Date.now()
       const elapsed = now - analysisTime
-      const remaining = (30 * 60 * 1000) - elapsed // 30 minutes in milliseconds
+      const remaining = (30 * 60 * 1000) - elapsed  
       
       if (remaining <= 0) {
         // Timer expired - reset everything
