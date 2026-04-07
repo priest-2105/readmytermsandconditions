@@ -1,4 +1,4 @@
-import { ArrowRight, Upload, Zap, CheckCircle, FileText, Shield, Clock, Users, Star, Play } from "lucide-react"
+import { ArrowRight, Upload, CheckCircle, FileText, Shield, Clock, Users } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import Navbar from "../components/navbar"
 import { motion } from "framer-motion"
@@ -6,60 +6,100 @@ import { useState, useEffect } from "react"
 import FileUploadArea from "../components/FileUploadArea"
 import TextAreaInput from "../components/TextAreaInput"
 
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
+}
+
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } }
+}
+
+const AnalysisPreview = () => {
+  const categories = [
+    {
+      label: "Things to Know",
+      colorClass: "bg-blue-50 border-blue-100 text-blue-800",
+      dotClass: "bg-blue-400",
+      items: [
+        "Data is retained for up to 24 months after account closure",
+        "Service availability is not guaranteed at all times",
+      ],
+    },
+    {
+      label: "Risks",
+      colorClass: "bg-red-50 border-red-100 text-red-800",
+      dotClass: "bg-red-400",
+      items: [
+        "Third-party data sharing is permitted without individual notification",
+        "Arbitration clause limits your ability to pursue legal action",
+      ],
+    },
+    {
+      label: "Your Rights",
+      colorClass: "bg-green-50 border-green-100 text-green-800",
+      dotClass: "bg-green-500",
+      items: [
+        "You may request deletion of your personal data at any time",
+        "You can opt out of marketing communications",
+      ],
+    },
+    {
+      label: "Your Obligations",
+      colorClass: "bg-orange-50 border-orange-100 text-orange-800",
+      dotClass: "bg-orange-400",
+      items: [
+        "Keep account credentials confidential",
+        "You are liable for all activity under your account",
+      ],
+    },
+  ]
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
+          <span className="text-sm font-medium text-gray-900">Analysis complete</span>
+        </div>
+        <span className="text-xs text-gray-400">6 categories · 18 highlights</span>
+      </div>
+      <div className="p-5 space-y-3">
+        {categories.map((cat) => (
+          <div key={cat.label} className={`rounded-md border p-3 ${cat.colorClass}`}>
+            <div className="text-xs font-semibold uppercase tracking-wider mb-2 opacity-60">
+              {cat.label}
+            </div>
+            {cat.items.map((item, i) => (
+              <div key={i} className="flex items-start gap-2 mb-1 last:mb-0">
+                <span className={`mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${cat.dotClass}`} />
+                <span className="text-xs leading-relaxed">{item}</span>
+              </div>
+            ))}
+          </div>
+        ))}
+        <p className="text-center text-xs text-gray-400 pt-1">+ Important Points and Additional Notes</p>
+      </div>
+    </div>
+  )
+}
+
 export default function LandingPage() {
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState('upload') // 'upload' or 'text'
+  const [activeTab, setActiveTab] = useState('upload')
   const [isProcessing, setIsProcessing] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState(0)
   const [canAnalyze, setCanAnalyze] = useState(true)
 
-  // Animation variants
-  const fadeInUp = {
-    initial: { opacity: 0, y: 60 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6, ease: "easeOut" }
-  }
-
-  const staggerContainer = {
-    animate: {
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  }
-
-  const scaleIn = {
-    initial: { opacity: 0, scale: 0.8 },
-    animate: { opacity: 1, scale: 1 },
-    transition: { duration: 0.5, ease: "easeOut" }
-  }
-
-  const slideInLeft = {
-    initial: { opacity: 0, x: -60 },
-    animate: { opacity: 1, x: 0 },
-    transition: { duration: 0.6, ease: "easeOut" }
-  }
-
-  const slideInRight = {
-    initial: { opacity: 0, x: 60 },
-    animate: { opacity: 1, x: 0 },
-    transition: { duration: 0.6, ease: "easeOut" }
-  }
-
-  
   const startAnalysisTimer = () => {
-    const cooldownDuration = 30 * 60 * 1000 
+    const cooldownDuration = 30 * 60 * 1000
     const endTime = Date.now() + cooldownDuration
-    
-    // Store the end time in localStorage
     localStorage.setItem('analysisCooldownEnd', endTime.toString())
-    
     setCanAnalyze(false)
     setTimeRemaining(cooldownDuration)
-    
     const timer = setInterval(() => {
       const remaining = endTime - Date.now()
-      
       if (remaining <= 0) {
         clearInterval(timer)
         setCanAnalyze(true)
@@ -82,14 +122,11 @@ export default function LandingPage() {
     if (storedEndTime) {
       const endTime = parseInt(storedEndTime)
       const remaining = endTime - Date.now()
-      
       if (remaining > 0) {
         setCanAnalyze(false)
         setTimeRemaining(remaining)
-        
         const timer = setInterval(() => {
           const currentRemaining = endTime - Date.now()
-          
           if (currentRemaining <= 0) {
             clearInterval(timer)
             setCanAnalyze(true)
@@ -107,737 +144,413 @@ export default function LandingPage() {
     }
   }
 
-  // Check localStorage on component mount
   useEffect(() => {
     checkLocalStorage()
   }, [])
 
   const handleFileSubmit = async (analysis) => {
-    if (!canAnalyze) {
-      return
-    }
-    
+    if (!canAnalyze) return
     setIsProcessing(true)
-    // Store results in localStorage and start timer
     localStorage.setItem('analysisResults', JSON.stringify(analysis))
     startAnalysisTimer()
-    
-    // Navigate to analyze page with the results
-    navigate('/analyze', { 
-      state: { 
-        summary: analysis,
-        fromLanding: true 
-      }
-    })
+    navigate('/analyze', { state: { summary: analysis, fromLanding: true } })
   }
 
   const handleTextSubmit = async (inputText) => {
-    if (!canAnalyze) {
-      return
-    }
-    
+    if (!canAnalyze) return
     setIsProcessing(true)
-    // Store text in localStorage and start timer
     localStorage.setItem('textToAnalyze', inputText)
     startAnalysisTimer()
-    
-    // Navigate to analyze page with the text to process
-    navigate('/analyze', { 
-      state: { 
-        textToAnalyze: inputText,
-        fromLanding: true 
-      }
-    })
+    navigate('/analyze', { state: { textToAnalyze: inputText, fromLanding: true } })
   }
 
   return (
-    <div className="min-h-screen bg-white">
-    
-    <Navbar/>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--c-bg)' }}>
+      <Navbar />
 
-      {/* Hero Section */}
-      <motion.section 
-        className="relative overflow-hidden bg-white"
-        initial="initial"
-        whileInView="animate"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={staggerContainer}
-      >
-        <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10"></div>
+      {/* ── Hero ── */}
+      <section className="dot-grid-bg border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-20 lg:py-28">
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
 
-        {/* Floating Elements */}
-        <motion.div 
-          className="absolute top-20 left-10 w-20 h-20 bg-blue-200/30 rounded-full blur-xl animate-pulse"
-          animate={{ 
-            y: [0, -20, 0],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{ 
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        ></motion.div>
-        <motion.div 
-          className="absolute top-40 right-20 w-32 h-32 bg-purple-200/30 rounded-full blur-xl animate-pulse delay-1000"
-          animate={{ 
-            y: [0, 20, 0],
-            scale: [1, 1.2, 1]
-          }}
-          transition={{ 
-            duration: 5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-        ></motion.div>
-        <motion.div 
-          className="absolute bottom-20 left-1/4 w-16 h-16 bg-indigo-200/30 rounded-full blur-xl animate-pulse delay-500"
-          animate={{ 
-            y: [0, -15, 0],
-            scale: [1, 1.15, 1]
-          }}
-          transition={{ 
-            duration: 3.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5
-          }}
-        ></motion.div>
-
-        <div className="max-w-7xl mx-auto px-6 py-24 lg:py-36">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left Column - Text Content */}
-            <motion.div className="text-center lg:text-left" variants={slideInLeft}>
-              {/* Badge */}
-              <motion.span 
-                className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200 mb-6"
-                variants={scaleIn}
+            {/* Left column */}
+            <motion.div
+              initial="hidden"
+              animate="show"
+              variants={stagger}
+              className="pt-4"
+            >
+              <motion.span
+                variants={fadeUp}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 mb-6"
               >
-                <Zap className="w-4 h-4 mr-2" />
-                AI-Powered Legal Analysis
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />
+                AI Legal Analysis
               </motion.span>
 
-              {/* Main Heading */}
-              <motion.h1 
-                className="text-[40px] lg:text-[56px] font-semibold tracking-tight mb-8"
-                variants={fadeInUp}
+              <motion.h1
+                variants={fadeUp}
+                className="text-5xl lg:text-6xl text-gray-900 mb-6 leading-tight"
+                style={{ fontFamily: 'var(--font-display)' }}
               >
-                <span className="text-gray-900">
-                  Decode Legal Jargon
-                </span>
+                Read the Terms.
                 <br />
-                <span className="text-gray-700">
-                  in Seconds
-                </span>
+                <span className="italic">Know the Risks.</span>
               </motion.h1>
 
-              {/* Subtitle */}
-              <motion.p 
-                className="text-xl lg:text-2xl text-gray-600 mb-12 leading-relaxed"
-                variants={fadeInUp}
+              <motion.p
+                variants={fadeUp}
+                className="text-lg text-gray-600 mb-8 leading-relaxed max-w-md"
+                style={{ fontFamily: 'var(--font-sans)' }}
               >
-                Transform complex terms & conditions into clear, actionable insights. Our AI breaks down legal documents
-                so you can make informed decisions with confidence.
+                Paste or upload any terms and conditions document. Get a plain-English breakdown
+                of risks, obligations, and rights — organized into six clear categories.
               </motion.p>
 
-              {/* Social Proof */}
-              <motion.div 
-                className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-8 text-sm text-gray-500 mb-12"
-                variants={fadeInUp}
+              <motion.div
+                variants={fadeUp}
+                className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500"
               >
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 border-2 border-white"></div>
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-400 to-green-600 border-2 border-white"></div>
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-400 to-purple-600 border-2 border-white"></div>
-                  </div>
-                  <span>Trusted by 10,000+ users</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  <span>4.9/5 rating</span>
-                </div>
+                <span>No signup required</span>
+                <span className="text-gray-300">·</span>
+                <span>Free to use</span>
+                <span className="text-gray-300">·</span>
+                <span>Secure and private</span>
               </motion.div>
             </motion.div>
 
-            {/* Right Column - Interactive Analysis Tool */}
-            <motion.div className="relative" variants={slideInRight}>
-              <motion.div 
-                className="apple-card p-8"
-                whileHover={{ y: -10 }}
-                transition={{ duration: 0.3 }}
-              >
-                {/* Tab Navigation */}
-                <div className="flex space-x-1 mb-6 bg-gray-100 rounded-xl p-1">
-                  <motion.button
+            {/* Right column — upload widget */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                {/* Tab switcher */}
+                <div className="flex gap-1 mb-5 bg-gray-100 rounded-lg p-1">
+                  <button
                     onClick={() => setActiveTab('upload')}
                     disabled={!canAnalyze}
-                    className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+                    className={`flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-all duration-150 flex items-center justify-center gap-2 ${
                       activeTab === 'upload'
                         ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
+                        : 'text-gray-500 hover:text-gray-700'
                     } ${!canAnalyze ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    whileHover={canAnalyze ? { scale: 1.02 } : {}}
-                    whileTap={canAnalyze ? { scale: 0.98 } : {}}
                   >
-                    <div className="flex items-center justify-center space-x-2">
-                      <Upload className="w-4 h-4" />
-                      <span>Upload File</span>
-                    </div>
-                  </motion.button>
-                  <motion.button
+                    <Upload className="w-3.5 h-3.5" />
+                    Upload File
+                  </button>
+                  <button
                     onClick={() => setActiveTab('text')}
                     disabled={!canAnalyze}
-                    className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+                    className={`flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-all duration-150 flex items-center justify-center gap-2 ${
                       activeTab === 'text'
                         ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
+                        : 'text-gray-500 hover:text-gray-700'
                     } ${!canAnalyze ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    whileHover={canAnalyze ? { scale: 1.02 } : {}}
-                    whileTap={canAnalyze ? { scale: 0.98 } : {}}
                   >
-                    <div className="flex items-center justify-center space-x-2">
-                      <FileText className="w-4 h-4" />
-                      <span>Paste Text</span>
-                    </div>
-                  </motion.button>
+                    <FileText className="w-3.5 h-3.5" />
+                    Paste Text
+                  </button>
                 </div>
 
-                {/* Cooldown Warning */}
+                {/* Cooldown warning */}
                 {!canAnalyze && (
-                  <motion.div 
-                    className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                          <Clock className="w-5 h-5 text-yellow-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-yellow-800">Analysis Cooldown Active</p>
-                          <p className="text-sm text-yellow-600">Please wait before starting a new analysis</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-yellow-700">
-                          {formatTimeRemaining(timeRemaining)}
-                        </div>
-                        <div className="text-xs text-yellow-600">remaining</div>
+                  <div className="mb-4 p-3.5 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <Clock className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-amber-800">Cooldown active</p>
+                        <p className="text-xs text-amber-600">Wait before starting a new analysis</p>
                       </div>
                     </div>
-                  </motion.div>
+                    <span className="text-lg font-semibold text-amber-700 tabular-nums">
+                      {formatTimeRemaining(timeRemaining)}
+                    </span>
+                  </div>
                 )}
 
-                {/* Tab Content */}
+                {/* Tab content */}
                 <motion.div
                   key={activeTab}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.2 }}
                 >
                   {activeTab === 'upload' ? (
-                    <div className="space-y-4">
-                      <div className="text-center">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Your Document</h3>
-                        <p className="text-sm text-gray-600 mb-4">PDF, DOCX, or TXT files supported</p>
-                      </div>
-                      <FileUploadArea onSubmit={handleFileSubmit} disabled={!canAnalyze} />
-                    </div>
+                    <FileUploadArea onSubmit={handleFileSubmit} disabled={!canAnalyze} />
                   ) : (
-                    <div className="space-y-4">
-                      <div className="text-center">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Paste Your Text</h3>
-                        <p className="text-sm text-gray-600 mb-4">Minimum 100 characters required</p>
-                      </div>
-                      <TextAreaInput onSubmit={handleTextSubmit} disabled={!canAnalyze} />
-                    </div>
+                    <TextAreaInput onSubmit={handleTextSubmit} disabled={!canAnalyze} />
                   )}
                 </motion.div>
 
-                {/* Processing State */}
+                {/* Processing state */}
                 {isProcessing && (
-                  <motion.div 
-                    className="mt-6 p-4 apple-card"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div className="flex items-center justify-center space-x-3">
-                      <motion.div 
-                        className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      />
-                      <span className="text-gray-800 font-medium">Processing your document...</span>
-                    </div>
-                  </motion.div>
+                  <div className="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-lg flex items-center gap-3">
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                    <span className="text-sm font-medium text-blue-800">Processing your document...</span>
+                  </div>
                 )}
-
-                {/* Cooldown Timer Display */}
-                {!canAnalyze && !isProcessing && (
-                  <motion.div 
-                    className="mt-6 p-4 apple-card"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div className="flex items-center justify-center space-x-3">
-                      <Clock className="w-5 h-5 text-yellow-600" />
-                      <span className="text-gray-800 font-medium">
-                        Next analysis available in {formatTimeRemaining(timeRemaining)}
-                      </span>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Sample Results Preview */}
-                {!isProcessing && (
-                  <motion.div 
-                    className="mt-6 space-y-4"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.5 }}
-                  >
-                    {/* <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl border border-green-200">
-                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-green-800">Analysis Complete</p>
-                        <p className="text-sm text-green-600">Document processed in 2.3 seconds</p>
-                      </div>
-                    </div> */}
-
-                    {/* <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                          <span className="text-sm font-medium text-red-800">High Risk Clause Found</span>
-                        </div>
-                        <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
-                          Critical
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                          <span className="text-sm font-medium text-yellow-800">Data Collection Terms</span>
-                        </div>
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
-                          Review
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          <span className="text-sm font-medium text-blue-800">Cancellation Policy</span>
-                        </div>
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                          Clear
-                        </span>
-                      </div>
-                    </div> */}
-                  </motion.div>
-                )}
-              </motion.div>
-
-              {/* Floating Cards */}
-              <motion.div 
-                className="absolute -top-4 -right-4 bg-white rounded-xl shadow-lg p-4 border border-gray-100"
-                animate={{ 
-                  y: [0, -10, 0],
-                  rotate: [0, 5, -5, 0]
-                }}
-                transition={{ 
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-yellow-500" />
-                  <span className="text-sm font-medium">AI Processing</span>
-                </div>
-              </motion.div>
-
-              <motion.div 
-                className="absolute -bottom-4 -left-4 bg-white rounded-xl shadow-lg p-4 border border-gray-100"
-                animate={{ 
-                  y: [0, 10, 0],
-                  rotate: [0, -5, 5, 0]
-                }}
-                transition={{ 
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-green-500" />
-                  <span className="text-sm font-medium">100% Secure</span>
-                </div>
-              </motion.div>
+              </div>
             </motion.div>
           </div>
         </div>
-      </motion.section>
+      </section>
 
-      {/* Stats Section */}
-      <motion.section 
-        className="py-16 bg-white border-y border-gray-100"
-        initial="initial"
-        whileInView="animate"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={staggerContainer}
-      >
+      {/* ── How it Works ── */}
+      <section id="how-it-works" className="py-24 bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <motion.div className="text-center" variants={fadeInUp}>
-              <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                100%
-              </div>
-              <div className="text-gray-600 font-medium">Free to Use</div>
-            </motion.div>
-            <motion.div className="text-center" variants={fadeInUp}>
-              <Clock className="w-10 h-10 mx-auto mb-2 text-green-600" />
-              <div className="text-gray-600 font-medium">Instant Results</div>
-            </motion.div>
-            <motion.div className="text-center" variants={fadeInUp}>
-              <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
-                AI
-              </div>
-              <div className="text-gray-600 font-medium">Powered Analysis</div>
-            </motion.div>
-            <motion.div className="text-center" variants={fadeInUp}>
-              <Shield className="w-10 h-10 mx-auto mb-2 text-orange-600" />
-              <div className="text-gray-600 font-medium">Secure & Private</div>
-            </motion.div>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* How It Works Section */}
-      <motion.section 
-        id="how-it-works" 
-        className="py-24 bg-gradient-to-br from-gray-50 to-blue-50/30"
-        initial="initial"
-        whileInView="animate"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={staggerContainer}
-      >
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div className="text-center mb-20" variants={fadeInUp}>
-            <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-purple-50 text-purple-700 border border-purple-200 mb-4">
-              Simple Process
-            </span>
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">How It Works</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Get clear insights from any legal document in three simple steps
-            </p>
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={stagger}
+            className="mb-14"
+          >
+            <motion.p variants={fadeUp} className="text-xs font-semibold uppercase tracking-widest text-blue-600 mb-3">
+              Process
+            </motion.p>
+            <motion.h2
+              variants={fadeUp}
+              className="text-4xl text-gray-900"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              Three steps to clarity
+            </motion.h2>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-            {/* Step 1 */}
-            <motion.div 
-              className="relative bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 group border border-gray-100"
-              variants={scaleIn}
-              whileHover={{ y: -10 }}
-            >
-              <div className="p-8 text-center">
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <motion.div 
-                    className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300"
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    <Upload className="w-8 h-8 text-white" />
-                  </motion.div>
-                </div>
-                <div className="pt-8">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-blue-200 text-blue-600 mb-4">
-                    Step 1
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={stagger}
+            className="grid md:grid-cols-3 gap-6"
+          >
+            {[
+              {
+                step: "01",
+                icon: <Upload className="w-5 h-5 text-blue-600" />,
+                title: "Upload your document",
+                body: "Upload a PDF, DOCX, or TXT file, or paste the text directly. Files are processed in memory and never stored.",
+              },
+              {
+                step: "02",
+                icon: <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>,
+                title: "AI reads and extracts",
+                body: "The AI scans every clause, identifies meaningful language, and maps findings to six structured categories.",
+              },
+              {
+                step: "03",
+                icon: <CheckCircle className="w-5 h-5 text-blue-600" />,
+                title: "Review plain-English insights",
+                body: "Navigate the results by category — risks, obligations, rights, and more — and decide what matters to you.",
+              },
+            ].map((item) => (
+              <motion.div
+                key={item.step}
+                variants={fadeUp}
+                className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                    {item.icon}
+                  </div>
+                  <span className="text-2xl font-semibold text-gray-200 tabular-nums" style={{ fontFamily: 'var(--font-display)' }}>
+                    {item.step}
                   </span>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Upload Document</h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Upload PDF, DOCX, or TXT files, or paste your terms and conditions text directly into our secure
-                    platform.
-                  </p>
                 </div>
-              </div>
-            </motion.div>
-
-            {/* Step 2 */}
-            <motion.div 
-              className="relative bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 group border border-gray-100"
-              variants={scaleIn}
-              whileHover={{ y: -10 }}
-            >
-              <div className="p-8 text-center">
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <motion.div 
-                    className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300"
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    <Zap className="w-8 h-8 text-white" />
-                  </motion.div>
-                </div>
-                <div className="pt-8">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-green-200 text-green-600 mb-4">
-                    Step 2
-                  </span>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">AI Analysis</h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Our advanced AI processes the document, identifying key clauses, risks, and important terms in
-                    seconds.
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Step 3 */}
-            <motion.div 
-              className="relative bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 group border border-gray-100"
-              variants={scaleIn}
-              whileHover={{ y: -10 }}
-            >
-              <div className="p-8 text-center">
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <motion.div 
-                    className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300"
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    <CheckCircle className="w-8 h-8 text-white" />
-                  </motion.div>
-                </div>
-                <div className="pt-8">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-purple-200 text-purple-600 mb-4">
-                    Step 3
-                  </span>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Get Clear Insights</h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Receive a comprehensive breakdown of risks, obligations, rights, and key points in plain English.
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
+                <h3 className="text-base font-semibold text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{item.body}</p>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
-      </motion.section>
+      </section>
 
-      {/* Features Section */}
-      <motion.section 
-        id="features" 
-        className="py-24 bg-white"
-        initial="initial"
-        whileInView="animate"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={staggerContainer}
-      >
+      {/* ── Features ── */}
+      <section id="features" className="py-24" style={{ backgroundColor: 'var(--c-bg)' }}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <motion.div variants={slideInLeft}>
-              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200 mb-4">
-                Powerful Features
-              </span>
-              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">Why Choose TermsAnalyzer?</h2>
-              <p className="text-xl text-gray-600 mb-8">
-                Our AI-powered platform makes legal documents accessible to everyone, not just lawyers.
-              </p>
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
+
+            {/* Left: feature list */}
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-80px" }}
+              variants={stagger}
+            >
+              <motion.p variants={fadeUp} className="text-xs font-semibold uppercase tracking-widest text-blue-600 mb-3">
+                What you get
+              </motion.p>
+              <motion.h2
+                variants={fadeUp}
+                className="text-4xl text-gray-900 mb-4"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                Built for people,
+                <br />
+                <span className="italic">not lawyers</span>
+              </motion.h2>
+              <motion.p variants={fadeUp} className="text-gray-600 mb-10 leading-relaxed max-w-md">
+                Legal documents are designed to be comprehensive, not readable.
+                TermsAnalyzer bridges that gap without requiring any legal expertise.
+              </motion.p>
 
               <div className="space-y-6">
-                <motion.div 
-                  className="flex items-start gap-4"
-                  variants={fadeInUp}
-                  whileHover={{ x: 10 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Shield className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Risk Assessment</h3>
-                    <p className="text-gray-600">
-                      Automatically identifies potential risks and red flags in legal documents.
-                    </p>
-                  </div>
-                </motion.div>
-
-                <motion.div 
-                  className="flex items-start gap-4"
-                  variants={fadeInUp}
-                  whileHover={{ x: 10 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Users className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Plain English Translation</h3>
-                    <p className="text-gray-600">Converts complex legal jargon into clear, understandable language.</p>
-                  </div>
-                </motion.div>
-
-                <motion.div 
-                  className="flex items-start gap-4"
-                  variants={fadeInUp}
-                  whileHover={{ x: 10 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Instant Processing</h3>
-                    <p className="text-gray-600">Get comprehensive analysis results in seconds, not hours.</p>
-                  </div>
-                </motion.div>
+                {[
+                  {
+                    icon: <Shield className="w-5 h-5 text-blue-600" />,
+                    bg: "bg-blue-50",
+                    title: "Risk identification",
+                    body: "Surfaces clauses that could expose you to liability, data sharing, or loss of rights.",
+                  },
+                  {
+                    icon: <Users className="w-5 h-5 text-gray-700" />,
+                    bg: "bg-gray-100",
+                    title: "Plain-English translation",
+                    body: "Every finding is written in plain language — no legal training needed to understand it.",
+                  },
+                  {
+                    icon: <Clock className="w-5 h-5 text-gray-700" />,
+                    bg: "bg-gray-100",
+                    title: "Structured six-category output",
+                    body: "Results are always organized into the same six categories so you know where to look.",
+                  },
+                  {
+                    icon: <FileText className="w-5 h-5 text-gray-700" />,
+                    bg: "bg-gray-100",
+                    title: "Multiple input formats",
+                    body: "Accepts PDF, DOCX, TXT files up to 5 MB, or direct text paste with no character limit on uploads.",
+                  },
+                ].map((f) => (
+                  <motion.div
+                    key={f.title}
+                    variants={fadeUp}
+                    className="flex items-start gap-4"
+                  >
+                    <div className={`w-10 h-10 ${f.bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                      {f.icon}
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900 mb-1">{f.title}</h3>
+                      <p className="text-sm text-gray-600 leading-relaxed">{f.body}</p>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </motion.div>
 
-            <motion.div className="relative" variants={slideInRight}>
-            <motion.div 
-                className="apple-card p-8"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.3 }}
-              >
-                <img
-                  src="/placeholder.svg?height=400&width=500"
-                  alt="TermsAnalyzer Dashboard"
-                  width={500}
-                  height={400}
-                  className="rounded-2xl shadow-lg"
-                />
-              </motion.div>
+            {/* Right: real analysis preview */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">
+                Example output
+              </p>
+              <AnalysisPreview />
+              <p className="mt-3 text-xs text-gray-400 text-center">
+                Sample analysis — actual results depend on the document analyzed.
+              </p>
             </motion.div>
           </div>
         </div>
-      </motion.section>
+      </section>
 
-      {/* Final CTA Section */}
-      <motion.section 
-        className="py-24 bg-gray-900 text-white relative overflow-hidden"
-        initial="initial"
-        whileInView="animate"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={fadeInUp}
-      >
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative max-w-4xl mx-auto text-center px-6">
-          <h2 className="text-4xl lg:text-5xl font-bold mb-6">Ready to Understand Your Terms?</h2>
-          <p className="text-xl lg:text-2xl mb-12 opacity-90">
-            Join thousands of users who trust TermsAnalyzer to decode legal documents. Start your free analysis today.
+      {/* ── CTA ── */}
+      <section className="py-24 bg-gray-900">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="max-w-3xl mx-auto text-center px-6"
+        >
+          <h2
+            className="text-4xl lg:text-5xl text-white mb-5"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            Stop agreeing to things
+            <br />
+            <span className="italic">you haven't read.</span>
+          </h2>
+          <p className="text-gray-400 text-lg mb-10 leading-relaxed">
+            Upload your next terms and conditions document before you accept.
+            It takes less than a minute.
           </p>
           <Link to="/analyze">
-            <motion.button 
-              className="bg-white text-blue-600 hover:bg-gray-100 px-10 py-6 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center mx-auto"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-base transition-colors inline-flex items-center gap-2.5"
             >
-              <FileText className="mr-2 w-5 h-5" />
-              Start Analyzing Now
+              <FileText className="w-4 h-4" />
+              Analyze a Document
             </motion.button>
           </Link>
-          <p className="text-sm mt-6 opacity-75">No signup required • 100% free • Secure & private</p>
-        </div>
-      </motion.section>
+        </motion.div>
+      </section>
 
-      {/* Footer */}
-      <motion.footer 
-        className="bg-gray-900 text-white py-16"
-        initial="initial"
-        whileInView="animate"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={fadeInUp}
-      >
+      {/* ── Footer ── */}
+      <footer className="bg-gray-900 border-t border-gray-800 py-12">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
-            <div className="md:col-span-2">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-white" />
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8 mb-10">
+            <div className="max-w-xs">
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-xl font-bold">TermsAnalyzer</span>
+                <span
+                  className="text-lg font-semibold text-white"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                >
+                  TermsAnalyzer
+                </span>
               </div>
-              <p className="text-gray-400 mb-6 max-w-md">
-                Making legal terms understandable for everyone. Empowering users to make informed decisions with
-                confidence.
+              <p className="text-sm text-gray-400 leading-relaxed">
+                AI-powered analysis of legal documents.
+                For informational purposes only — not legal advice.
               </p>
             </div>
 
-            <div>
-              <h3 className="font-semibold mb-4">Product</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Features
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    How it Works
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Pricing
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    API
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Help Center
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Contact Us
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Terms of Service
-                  </a>
-                </li>
-              </ul>
+            <div className="flex gap-16">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-300 mb-3">Navigate</h3>
+                <ul className="space-y-2 text-sm text-gray-500">
+                  <li>
+                    <button
+                      onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="hover:text-gray-300 transition-colors"
+                    >
+                      Features
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="hover:text-gray-300 transition-colors"
+                    >
+                      How it Works
+                    </button>
+                  </li>
+                  <li>
+                    <Link to="/analyze" className="hover:text-gray-300 transition-colors">
+                      Analyzer
+                    </Link>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-8 text-center">
-            <p className="text-gray-400">
-              © 2024 TermsAnalyzer. This tool is for informational purposes only and should not be considered as legal
-              advice.
+          <div className="border-t border-gray-800 pt-8">
+            <p className="text-xs text-gray-600">
+              &copy; 2025 TermsAnalyzer. This tool is for informational purposes only and does not constitute legal advice.
             </p>
           </div>
         </div>
-      </motion.footer>
+      </footer>
     </div>
   )
 }

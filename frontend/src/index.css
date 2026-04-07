@@ -1,131 +1,106 @@
 @import "tailwindcss";
 
-/* Apple-inspired global theme */
 @theme {
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", Roboto, Arial, system-ui, sans-serif;
+  --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
 }
 
 @layer base {
   :root {
-    /* iOS/macOS-like focus blue */
-    --apple-blue: #0a84ff;
-    --border-color: #e5e7eb; /* neutral light border */
-    --card-bg: #ffffff;
+    --c-bg: #F9F9F7;
+    --c-surface: #FFFFFF;
+    --c-border: #E5E7EB;
+    --c-text: #111827;
+    --c-text-secondary: #6B7280;
+    --c-accent: #2563EB;
+    --c-accent-hover: #1D4ED8;
+    --apple-blue: #2563EB;
+    --border-color: #E5E7EB;
+    --card-bg: #FFFFFF;
     --text-color: #111827;
-    --muted-text: #6b7280;
+    --muted-text: #6B7280;
   }
 
   html {
     font-family: var(--font-sans);
-    font-size: 17px; /* Apple-y base size */
-    line-height: 1.45;
-    letter-spacing: -0.011em;
+    font-size: 16px;
+    line-height: 1.6;
+    letter-spacing: -0.008em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
-    background-color: #ffffff;
-    color: var(--text-color);
+    background-color: var(--c-bg);
+    color: var(--c-text);
   }
 
   body {
-    background-color: #ffffff;
+    background-color: var(--c-bg);
   }
 
   h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
     letter-spacing: -0.02em;
+    line-height: 1.2;
   }
 }
 
-/* Removed heavy global transitions for a calmer feel */
-
-/* Custom scrollbar for webkit browsers */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #F1F5F9;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
+  background: #94A3B8;
   border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #2563eb, #7c3aed);
+  background: #64748B;
 }
 
-/* Gentle, explicit transitions can be applied per-component instead */
-
-/* Custom animation for floating elements */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-/* Enhanced focus states in Apple blue */
-button:focus,
-a:focus,
-input:focus,
-textarea:focus {
-  outline: 2px solid var(--apple-blue);
+/* Focus states */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--c-accent);
   outline-offset: 2px;
 }
 
-/* Custom gradient text animation */
-.gradient-text {
-  background: linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899);
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gradient-shift 3s ease infinite;
-}
-
-@keyframes gradient-shift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-/* Apple-like cards and buttons */
+/* Card component */
 .apple-card {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 14px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
+/* Button components */
 .apple-btn {
-  background-color: #f5f5f7;
+  background-color: #F5F5F7;
   color: #111827;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
   padding: 0.625rem 1rem;
+  font-family: var(--font-sans);
+  transition: background-color 0.15s ease;
 }
 .apple-btn:hover {
-  background-color: #ebebef;
+  background-color: #EBEBEF;
 }
 .apple-btn.primary {
-  background-color: var(--apple-blue);
-  color: #fff;
-  border-color: var(--apple-blue);
+  background-color: var(--c-accent);
+  color: #FFFFFF;
+  border-color: var(--c-accent);
 }
 .apple-btn.primary:hover {
-  background-color: #007aff;
+  background-color: var(--c-accent-hover);
+}
+
+/* Dot grid background for hero */
+.dot-grid-bg {
+  background-color: var(--c-bg);
+  background-image: radial-gradient(circle, #D1D5DB 1px, transparent 1px);
+  background-size: 28px 28px;
 }
